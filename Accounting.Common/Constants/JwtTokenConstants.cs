@@ -10,5 +10,6 @@ namespace AccountingsTracker.Common.Constants
     {
         public const string UserId = "UserId";
         public const string Role = "Role";
+        public const string TenantId = "TenantId";
     }
 }

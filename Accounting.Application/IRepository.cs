@@ -13,6 +13,8 @@ namespace Accounting.Application
 
         Task<Table> GetById(Guid id);
 
+        Task<Table> GetByTenantId(Guid tenantId);
+
         Task DeleteById(Guid id);
 
         Task Delete(Table entity);

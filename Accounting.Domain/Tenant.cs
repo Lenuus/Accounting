@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class Tenant
+    public class Tenant:IBaseEntity
     {
         public Guid Id { get; set; }
 

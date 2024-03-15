@@ -57,6 +57,7 @@ namespace Accounting.Application.Service.Account
             var claims = new List<Claim>();
             claims.Add(new Claim(JwtTokenConstants.UserId, user.Id.ToString()));
             claims.Add(new Claim(ClaimTypes.Email, user.Email.ToString()));
+            claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
             var roleName = user.Roles.FirstOrDefault().Role.Name;
             claims.Add(new Claim(ClaimTypes.Role, roleName));
             var tokenInfo = _authService.GenerateToken(claims);
@@ -116,7 +117,8 @@ namespace Accounting.Application.Service.Account
                 Roles = new List<Domain.UserRole>
                 {
                     new Domain.UserRole{ RoleId = userRole.Id }
-                }
+                },
+                TenantId=Guid.NewGuid(),
             };
             await _userRepository.Create(user);
             return new ServiceResponse(true, string.Empty);

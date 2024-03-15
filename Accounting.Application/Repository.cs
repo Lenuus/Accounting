@@ -57,6 +57,14 @@ namespace Accounting.Application
 
         }
 
+        public async Task<Table> GetByTenantId(Guid tenantId)
+        {
+            var query = await _table.FindAsync(tenantId);
+            if (query == null)
+                throw new Exception("Not Found");
+            return query;
+        }
+
         public async Task Update(Table entity)
         {
             _table.Update(entity);

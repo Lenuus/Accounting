@@ -1,18 +1,16 @@
-﻿using System;
+﻿using Accounting.Common.Enum;
+using Accounting.Domain;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Accounting.Common.Enum;
-using Accounting.Domain;
 
-namespace Accounting.Domain
+namespace Accounting.Application.Service.Corporation.Dtos
 {
-    public class Corporation : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class CorporationRegisterRequestDto
     {
-        public Guid Id { get; set; }
-        [Required]
         public string Number { get; set; }
         [Required]
         public bool Title { get; set; }
@@ -30,18 +28,8 @@ namespace Accounting.Domain
         public decimal CurrentBalance { get; set; }
         [Required]
         public CorporationType CorporationType { get; set; }
-        public ICollection<CorporationRecord> CorporationRecord { get; set; }
-        public ICollection<Order> Order { get; set; }
         [Required]
         public Guid TenantId { get; set; }
-        #region Audit
-        public DateTime InsertedDate { get; set; }
-        public Guid InsertedById { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public Guid? UpdatedById { get; set; }
-        public DateTime DeletedDate { get; set; }
-        public Guid? DeletedById { get; set; }
-        public bool IsDeleted { get; set; }
-        #endregion
+       
     }
 }
