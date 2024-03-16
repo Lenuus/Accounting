@@ -1,9 +1,10 @@
-﻿using Accounting.Application.Service.ClaimManager;
-using Accounting.Application.Service.Corporation.Dtos;
+﻿using Accounting.Application.Service.Corporation.Dtos;
 using Accounting.Application.Service.Order;
-using AccountingsTracker.Common.Constants;
-using AccountingsTracker.Common.Dtos;
-using AccountingsTracker.Common.Helpers;
+using Accounting.Common.Helpers;
+using Accounting.Domain;
+using Accountings.Common.Constants;
+using Accountings.Common.Dtos;
+using Accountings.Common.Helpers;
 using AutoMapper;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,13 @@ namespace Accounting.Application.Service.Corporation
         private readonly IMapper _mapper;
         private readonly IClaimManager _claimManager;
 
-        public CorporationService(IRepository<Domain.Corporation> corporationRepository, IMapper mapper, IClaimManager claimManager, IRepository<Domain.Order> orderRepository, IRepository<Domain.CorporationRecord> corporationrecordRepository, IRepository<Domain.Tenant> tenantRepository)
+        public CorporationService(
+            IRepository<Domain.Corporation> corporationRepository,
+            IMapper mapper,
+            IClaimManager claimManager,
+            IRepository<Domain.Order> orderRepository,
+            IRepository<Domain.CorporationRecord> corporationrecordRepository,
+            IRepository<Domain.Tenant> tenantRepository)
         {
             _corporationRepository = corporationRepository;
             _mapper = mapper;
@@ -38,11 +45,12 @@ namespace Accounting.Application.Service.Corporation
         public async Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequest request)
         {
             var loggedUserId = _claimManager.GetUserId();
+            var loggedTenantId = _claimManager.GetTenantId();
             var query = await _corporationRepository.GetAll()
-                 .Include(f => f.Order).Include(f => f.CorporationRecord)
-                 .Where(f => !f.IsDeleted && (!string.IsNullOrEmpty(request.Search) ?
-                 EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Search}%") : true)
-                 && request.TenantId != null ? f.TenantId == request.TenantId : true)
+                 .Include(f => f.Orders).Include(f => f.CorporationRecords)
+                 .Where(f => !f.IsDeleted &&
+                             f.TenantId == loggedTenantId &&
+                             (!string.IsNullOrEmpty(request.Search) ? EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Search}%") : true))
                  .Select(f => new CorporationListDto
                  {
                      Number = f.Number,
@@ -55,7 +63,7 @@ namespace Accounting.Application.Service.Corporation
                      VKN = f.VKN,
                      Title = f.Title,
                      Country = f.Country,
-                     CorporationRecord = f.CorporationRecord.Where(f => !f.IsDeleted).Select(f => new CorporationRecordDetailDto
+                     CorporationRecord = f.CorporationRecords.Where(f => !f.IsDeleted).Select(f => new CorporationRecordDetailDto
                      {
                          Id = f.Id,
                          CorporationId = f.CorporationId,
@@ -68,7 +76,7 @@ namespace Accounting.Application.Service.Corporation
                          TenantId = f.TenantId,
 
                      }).ToList(),
-                     Order = f.Order.Where(f => !f.IsDeleted).Select(f => new OrderDetailDto
+                     Order = f.Orders.Where(f => !f.IsDeleted).Select(f => new OrderDetailDto
                      {
                          Id = f.Id,
                          CorporationId = f.CorporationId,
@@ -86,40 +94,23 @@ namespace Accounting.Application.Service.Corporation
             return new ServiceResponse<PagedResponseDto<CorporationListDto>>(query, true, string.Empty);
         }
 
-        public async Task<ServiceResponse> RegisterCorporation(CorporationRegisterRequestDto request)
+        public async Task<ServiceResponse> CreateCorporation(CorporationRegisterRequestDto request)
         {
             if (request == null)
             {
                 return new ServiceResponse(false, "Request is not valid");
             }
-            if (request.Title && request.VKN.IsNullOrEmpty())
-            {
-                return new ServiceResponse(false, "For corporations VKN number is required.");
-            }
-            if (request.Title == false && !(request.VKN.IsNullOrEmpty()))
-            {
-                return new ServiceResponse(false, "For personel corporations VKN is not needed.");
 
-            }
-            if (request.Title && !(request.TCKN.IsNullOrEmpty()))
+            if (string.IsNullOrEmpty(request.TCKN) && string.IsNullOrEmpty(request.VKN))
             {
-                return new ServiceResponse(false, "For  corporations TCKN number is not needed.");
-
-            }
-            if (request.Title == false && request.TCKN.IsNullOrEmpty())
-            {
-                return new ServiceResponse(false, "For personel corporations TCKN number is required.");
+                return new ServiceResponse(false, "Can not be null");
             }
 
             var entity = _mapper.Map<Domain.Corporation>(request);
-            entity.TenantId = Guid.NewGuid();
-            var userRole = _claimManager.GetRole();
-            if (userRole == RoleConstants.Admin)
-            {
-                entity.InsertedById = _claimManager.GetUserId();
-                entity.TenantId = _claimManager.GetTenantId();
-                await _corporationRepository.Create(entity).ConfigureAwait(false);
-            }
+            entity.InsertedDate = DateTime.UtcNow;
+            entity.InsertedById = _claimManager.GetUserId();
+            entity.TenantId = _claimManager.GetTenantId();
+            await _corporationRepository.Create(entity).ConfigureAwait(false);
             return new ServiceResponse(true, string.Empty);
         }
 
@@ -127,13 +118,9 @@ namespace Accounting.Application.Service.Corporation
         {
             try
             {
-                var userRole = _claimManager.GetRole();
-                if (userRole == RoleConstants.Admin)
-                {
-                    await _corporationRepository.DeleteById(id).ConfigureAwait(false);
-                    var entity = await _corporationRepository.GetById(id).ConfigureAwait(false);
-                    entity.DeletedById = _claimManager.GetUserId();
-                }
+                await _corporationRepository.DeleteById(id).ConfigureAwait(false);
+                var entity = await _corporationRepository.GetById(id).ConfigureAwait(false);
+                entity.DeletedById = _claimManager.GetUserId();
                 return new ServiceResponse(true, string.Empty);
             }
             catch (Exception)
@@ -142,5 +129,28 @@ namespace Accounting.Application.Service.Corporation
             }
         }
 
+        public async Task<ServiceResponse> UpdateCorporation(UpdateCorporationDto request)
+        {
+            var corporation = await _corporationRepository.GetById(request.Id).ConfigureAwait(false);
+            if (corporation == null)
+            {
+                return new ServiceResponse(false, "Not Found");
+            }
+
+            corporation.VKN = request.VKN;
+            corporation.TCKN = request.TCKN;
+            corporation.Number = request.Number;
+            corporation.Address = request.Address;
+            corporation.City = request.City;
+            corporation.CorporationType = request.CorporationType;
+            corporation.Country = request.Country;
+            corporation.CurrentBalance = request.CurrentBalance;
+            corporation.State = request.State;
+            corporation.Title = request.Title;
+            corporation.UpdatedDate = DateTime.UtcNow;
+            corporation.UpdatedById = _claimManager.GetUserId();
+            await _corporationRepository.Update(corporation).ConfigureAwait(false);
+            return new ServiceResponse(true, string.Empty);
+        }
     }
 }

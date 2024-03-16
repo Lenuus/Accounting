@@ -20,7 +20,7 @@ namespace Accounting.Application.Service.Auth
             _configuration = configuration;
         }
 
-        public ServiceResponse<TokenInfo> GenerateToken(List<Claim>claims)
+        public ServiceResponse<TokenInfo> GenerateToken(List<Claim> claims)
         {
             var expiresInMinutes = _configuration["JwtSettings:ExpiresInMinutes"];
             if (string.IsNullOrWhiteSpace(expiresInMinutes))
@@ -29,11 +29,11 @@ namespace Accounting.Application.Service.Auth
             }
 
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
-            SigningCredentials signingCredentials= new SigningCredentials(symmetricSecurityKey,"HS256");
-            var expires= DateTime.UtcNow.AddMinutes(Convert.ToInt32(expiresInMinutes));
+            SigningCredentials signingCredentials = new SigningCredentials(symmetricSecurityKey, "HS256");
+            var expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(expiresInMinutes));
             var issuer = _configuration["JwtSettings:Issuer"];
             JwtSecurityToken token = new JwtSecurityToken(issuer, issuer, claims, null, expires, signingCredentials);
-            var tokenStr= new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
             return new ServiceResponse<TokenInfo>(new TokenInfo
             {
                 Token = tokenStr,

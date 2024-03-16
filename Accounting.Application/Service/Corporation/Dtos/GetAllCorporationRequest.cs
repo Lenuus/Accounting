@@ -1,4 +1,4 @@
-﻿using AccountingsTracker.Common.Dtos;
+﻿using Accountings.Common.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,5 @@ namespace Accounting.Application.Service.Corporation.Dtos
     public class GetAllCorporationRequest:PagedRequestDto
     {
         public string? Search { get; set; }
-        public Guid? TenantId { get; set; }
     }
 }

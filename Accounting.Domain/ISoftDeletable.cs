@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public interface  ISoftDeletable
+    public interface ISoftDeletable
     {
         public bool IsDeleted { get; set; }
+        public DateTime DeletedDate { get; set; }
+        public Guid? DeletedById { get; set; }
     }
 }

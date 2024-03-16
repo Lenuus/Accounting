@@ -1,8 +1,8 @@
 ﻿using Accounting.Application.Service.Account.Dtos;
 using Accounting.Application.Service.Auth;
 using Accounting.Domain;
-using AccountingsTracker.Common.Constants;
-using AccountingsTracker.Common.Helpers;
+using Accountings.Common.Constants;
+using Accountings.Common.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace Accounting.Application.Service.Account
             }
             var claims = new List<Claim>();
             claims.Add(new Claim(JwtTokenConstants.UserId, user.Id.ToString()));
-            claims.Add(new Claim(ClaimTypes.Email, user.Email.ToString()));
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
             claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
             var roleName = user.Roles.FirstOrDefault().Role.Name;
             claims.Add(new Claim(ClaimTypes.Role, roleName));
@@ -118,7 +118,7 @@ namespace Accounting.Application.Service.Account
                 {
                     new Domain.UserRole{ RoleId = userRole.Id }
                 },
-                TenantId=Guid.NewGuid(),
+                TenantId = Guid.NewGuid(),
             };
             await _userRepository.Create(user);
             return new ServiceResponse(true, string.Empty);

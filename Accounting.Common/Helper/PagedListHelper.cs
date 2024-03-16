@@ -1,4 +1,4 @@
-﻿using AccountingsTracker.Common.Dtos;
+﻿using Accountings.Common.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AccountingsTracker.Common.Helpers
+namespace Accountings.Common.Helpers
 {
     public static class PagedListHelper
     {

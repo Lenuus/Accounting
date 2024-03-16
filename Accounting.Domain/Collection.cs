@@ -26,10 +26,8 @@ namespace Accounting.Domain
         #region Audit
         public DateTime InsertedDate { get; set; }
         public Guid InsertedById { get; set; }
-
         public DateTime UpdatedDate { get; set; }
         public Guid? UpdatedById { get; set; }
-
         public DateTime DeletedDate { get; set; }
         public Guid? DeletedById { get; set; }
         public bool IsDeleted { get; set; }

@@ -1,15 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using AccountingsTracker.Common.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Accountings.Common.Constants;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Accounting.Application.Service.ClaimManager;
-using Accounting.Domain;
 
-namespace AccountingsTracker.Common.Helpers
+namespace Accounting.Common.Helpers
 {
     public class ClaimManager : IClaimManager
     {

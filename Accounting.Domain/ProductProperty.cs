@@ -9,5 +9,7 @@
         public string Value { get; set; }
         public Guid TenantId { get; set; }
         public bool IsDeleted { get; set; }
+        public DateTime DeletedDate { get ; set ; }
+        public Guid? DeletedById { get ; set ; }
     }
 }

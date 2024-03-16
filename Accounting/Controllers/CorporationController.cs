@@ -16,11 +16,11 @@ namespace Accounting.Controllers
             _corporationService = corporationService;
         }
 
-        [HttpPost("Register-Corporation")]
-        [Authorize]
-        public async Task<IActionResult> RegisterCorporation([FromBody] CorporationRegisterRequestDto request)
+        [HttpPost("Create-Corporation")]
+        [Authorize(Policy = "CreateCorporation")]
+        public async Task<IActionResult> CreateCorporation([FromBody] CorporationRegisterRequestDto request)
         {
-            var response = await _corporationService.RegisterCorporation(request).ConfigureAwait(false);
+            var response = await _corporationService.CreateCorporation(request).ConfigureAwait(false);
             if (!response.IsSuccesfull)
             {
                 return BadRequest(response);

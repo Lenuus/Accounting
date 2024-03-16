@@ -30,8 +30,8 @@ namespace Accounting.Domain
         public decimal CurrentBalance { get; set; }
         [Required]
         public CorporationType CorporationType { get; set; }
-        public ICollection<CorporationRecord> CorporationRecord { get; set; }
-        public ICollection<Order> Order { get; set; }
+        public ICollection<CorporationRecord> CorporationRecords { get; set; }
+        public ICollection<Order> Orders { get; set; }
         [Required]
         public Guid TenantId { get; set; }
         #region Audit
