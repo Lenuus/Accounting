@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Accountings.Common.Dtos
+namespace AccountingsTracker.Common.Dtos
 {
     public class PagedRequestDto
     {

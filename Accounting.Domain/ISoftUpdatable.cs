@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public interface IUpdateAuditInterceptor
+    public interface ISoftUpdatable
     {
         public DateTime UpdatedDate { get; set; }
         public Guid? UpdatedById { get; set; }

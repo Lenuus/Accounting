@@ -1,4 +1,4 @@
-﻿using Accounting.Application.Service.Order;
+﻿using Accounting.Application.Service.Order.Dtos;
 using Accounting.Common.Enum;
 
 namespace Accounting.Application.Service.Corporation.Dtos

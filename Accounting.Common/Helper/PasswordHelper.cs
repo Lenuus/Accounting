@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace Accountings.Common.Helpers
+namespace AccountingsTracker.Common.Helpers
 {
     public class PasswordHelper
     {

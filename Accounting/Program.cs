@@ -4,7 +4,7 @@ using Accounting.Common.Helpers;
 using Accounting.Domain;
 using Accounting.Persistence;
 using Accounting.Persistence.Interceptors;
-using Accountings.Common.Helpers;
+using AccountingsTracker.Common.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MainDbContext>(
     (sp, option) => option
                     .UseSqlServer(builder.Configuration.GetConnectionString("MainDbContext"))
-                    .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>()));
+                                                                           .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())
+                                                                           .AddInterceptors(sp.GetRequiredService<CreateInterceptor>())
+                                                                           .AddInterceptors(sp.GetRequiredService<UpdateAuditInterceptor>()));
 
 builder.Services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<MainDbContext>()
@@ -27,6 +29,8 @@ builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddSingleton<PasswordHelper>();
 builder.Services.AddScoped<IClaimManager, ClaimManager>();
 builder.Services.AddScoped<SoftDeleteInterceptor>();
+builder.Services.AddScoped<CreateInterceptor>();
+builder.Services.AddScoped<UpdateAuditInterceptor>();
 
 AppDomain.CurrentDomain.GetAssemblies().SelectMany(f => f.GetTypes())
     .Where(f => typeof(IApplicationService).IsAssignableFrom(f) && !f.IsInterface)

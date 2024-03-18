@@ -1,10 +1,10 @@
 ﻿using Accounting.Application.Service.Corporation.Dtos;
 using Accounting.Application.Service.Order;
+using Accounting.Application.Service.Order.Dtos;
 using Accounting.Common.Helpers;
 using Accounting.Domain;
-using Accountings.Common.Constants;
-using Accountings.Common.Dtos;
-using Accountings.Common.Helpers;
+using AccountingsTracker.Common.Dtos;
+using AccountingsTracker.Common.Helpers;
 using AutoMapper;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,6 @@ namespace Accounting.Application.Service.Corporation
         private readonly IRepository<Domain.Corporation> _corporationRepository;
         private readonly IRepository<Domain.Order> _orderRepository;
         private readonly IRepository<Domain.CorporationRecord> _corporationrecordRepository;
-        private readonly IRepository<Domain.Tenant> _tenantRepository;
         private readonly IMapper _mapper;
         private readonly IClaimManager _claimManager;
 
@@ -31,15 +30,13 @@ namespace Accounting.Application.Service.Corporation
             IMapper mapper,
             IClaimManager claimManager,
             IRepository<Domain.Order> orderRepository,
-            IRepository<Domain.CorporationRecord> corporationrecordRepository,
-            IRepository<Domain.Tenant> tenantRepository)
+            IRepository<Domain.CorporationRecord> corporationrecordRepository)
         {
             _corporationRepository = corporationRepository;
             _mapper = mapper;
             _claimManager = claimManager;
             _orderRepository = orderRepository;
             _corporationrecordRepository = corporationrecordRepository;
-            _tenantRepository = tenantRepository;
         }
 
         public async Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequest request)
@@ -107,8 +104,6 @@ namespace Accounting.Application.Service.Corporation
             }
 
             var entity = _mapper.Map<Domain.Corporation>(request);
-            entity.InsertedDate = DateTime.UtcNow;
-            entity.InsertedById = _claimManager.GetUserId();
             entity.TenantId = _claimManager.GetTenantId();
             await _corporationRepository.Create(entity).ConfigureAwait(false);
             return new ServiceResponse(true, string.Empty);
@@ -119,8 +114,6 @@ namespace Accounting.Application.Service.Corporation
             try
             {
                 await _corporationRepository.DeleteById(id).ConfigureAwait(false);
-                var entity = await _corporationRepository.GetById(id).ConfigureAwait(false);
-                entity.DeletedById = _claimManager.GetUserId();
                 return new ServiceResponse(true, string.Empty);
             }
             catch (Exception)
@@ -147,9 +140,32 @@ namespace Accounting.Application.Service.Corporation
             corporation.CurrentBalance = request.CurrentBalance;
             corporation.State = request.State;
             corporation.Title = request.Title;
-            corporation.UpdatedDate = DateTime.UtcNow;
-            corporation.UpdatedById = _claimManager.GetUserId();
             await _corporationRepository.Update(corporation).ConfigureAwait(false);
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        public async Task<ServiceResponse> CreateCorporationRecord(CorporationRecordCreateRequestDto request)
+        {
+            if (request == null)
+            {
+                return new ServiceResponse(false, "Request is not valid");
+            }
+            var entity = _mapper.Map<Domain.CorporationRecord>(request);
+            var corporation = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
+            entity.TenantId = _claimManager.GetTenantId();
+            await _corporationrecordRepository.Create(entity).ConfigureAwait(false);
+            corporation.CorporationRecords.Add(entity);
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        public async Task<ServiceResponse> RemoveCorporationRecord(Guid id)
+        {
+            var record = await _corporationrecordRepository.GetById(id).ConfigureAwait(false);
+            if (record == null)
+            {
+                new ServiceResponse(false, "Can'not found");
+            }
+            await _corporationrecordRepository.DeleteById(id).ConfigureAwait(false);
             return new ServiceResponse(true, string.Empty);
         }
     }

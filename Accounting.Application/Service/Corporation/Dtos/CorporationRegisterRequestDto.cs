@@ -28,8 +28,6 @@ namespace Accounting.Application.Service.Corporation.Dtos
         public decimal CurrentBalance { get; set; }
         [Required]
         public CorporationType CorporationType { get; set; }
-        [Required]
-        public Guid TenantId { get; set; }
        
     }
 }

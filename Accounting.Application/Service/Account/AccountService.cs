@@ -1,8 +1,9 @@
 ﻿using Accounting.Application.Service.Account.Dtos;
 using Accounting.Application.Service.Auth;
 using Accounting.Domain;
-using Accountings.Common.Constants;
-using Accountings.Common.Helpers;
+using AccountingsTracker.Common.Constants;
+using AccountingsTracker.Common.Helpers;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,13 +22,17 @@ namespace Accounting.Application.Service.Account
         private readonly PasswordHelper _passwordHelper;
         private readonly IRepository<Domain.Role> _roleRepository;
         private readonly IAuthService _authService;
+        private readonly SignInManager<Domain.User> _singInManager;
+        private readonly UserManager<Domain.User> _userManager;
 
-        public AccountService(IRepository<User> userRepository, IRepository<Role> roleRepository, PasswordHelper passwordHelper, IAuthService authService)
+        public AccountService(IRepository<User> userRepository, IRepository<Role> roleRepository, PasswordHelper passwordHelper, IAuthService authService, UserManager<User> userManager, SignInManager<User> singInManager)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _passwordHelper = passwordHelper;
             _authService = authService;
+            _userManager = userManager;
+            _singInManager = singInManager;
         }
 
         public async Task<ServiceResponse<LoginResponseDto>> Login(LoginRequestDto request)
@@ -45,33 +50,19 @@ namespace Accounting.Application.Service.Account
                 return new ServiceResponse<LoginResponseDto>(null, false, "User not found");
             }
 
-            if (!_passwordHelper.Verify(request.Password, user.PasswordHash))
-            {
-                return new ServiceResponse<LoginResponseDto>(null, false, "Email or password is incorrect");
-            }
 
             if (!user.EmailConfirmed)
             {
                 return new ServiceResponse<LoginResponseDto>(null, false, "Activate your email");
             }
-            var claims = new List<Claim>();
-            claims.Add(new Claim(JwtTokenConstants.UserId, user.Id.ToString()));
-            claims.Add(new Claim(ClaimTypes.Email, user.Email));
-            claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
-            var roleName = user.Roles.FirstOrDefault().Role.Name;
-            claims.Add(new Claim(ClaimTypes.Role, roleName));
-            var tokenInfo = _authService.GenerateToken(claims);
-            if (!tokenInfo.IsSuccesfull)
+            var signInResult = await _singInManager.PasswordSignInAsync(user, request.Password, true, true).ConfigureAwait(false);
+            if (!signInResult.Succeeded)
             {
-                return new ServiceResponse<LoginResponseDto>(null, false, "Token cannot be created");
+                return new ServiceResponse<LoginResponseDto>(null, false, "Email or password is wrong");
             }
-            var loginInfo = new LoginResponseDto()
-            {
-                Expire = tokenInfo.Data.Expire,
-                Token = tokenInfo.Data.Token,
-            };
-            return new ServiceResponse<LoginResponseDto>(loginInfo, true, string.Empty);
+            return await CreateTokenForUser(user).ConfigureAwait(false);
         }
+
         public async Task<ServiceResponse> Register(RegisterRequestDto request)
         {
             if (!EmailIsValid(request.Email))
@@ -101,27 +92,35 @@ namespace Accounting.Application.Service.Account
                 return new ServiceResponse(false, "User already exists");
             }
 
-            var userRole = await _roleRepository.GetAll().FirstOrDefaultAsync(f => f.Name == RoleConstants.User).ConfigureAwait(false);
-            if (userRole == null)
+            var user = await _userManager.CreateAsync(new Domain.User { Email = request.Email, UserName = request.Email }, request.Password).ConfigureAwait(false);
+            if (user.Succeeded)
             {
-                return new ServiceResponse(false, "User role not exists");
+                var createdUser = await _userManager.FindByEmailAsync(request.Email).ConfigureAwait(false);
+                createdUser.TenantId = Guid.NewGuid();
+                await _userManager.AddToRoleAsync(createdUser, RoleConstants.User).ConfigureAwait(false);
+                return new ServiceResponse(true, string.Empty);
             }
-
-            var user = new Domain.User
+            return new ServiceResponse(false, string.Join("n", user.Errors.Select(f => f.Description)));
+        }
+        private async Task<ServiceResponse<LoginResponseDto>> CreateTokenForUser(Domain.User user)
+        {
+            var claims = new List<Claim>();
+            claims.Add(new Claim(JwtTokenConstants.UserId, user.Id.ToString()));
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
+            var roleName = user.Roles.FirstOrDefault().Role.Name;
+            claims.Add(new Claim(ClaimTypes.Role, roleName));
+            var tokenInfo = _authService.GenerateToken(claims);
+            if (!tokenInfo.IsSuccesfull)
             {
-                Email = request.Email,
-                NormalizedEmail = normalizedEmail,
-                UserName = request.Email,
-                NormalizedUserName = normalizedEmail,
-                PasswordHash = _passwordHelper.Hash(request.Password),
-                Roles = new List<Domain.UserRole>
-                {
-                    new Domain.UserRole{ RoleId = userRole.Id }
-                },
-                TenantId = Guid.NewGuid(),
+                return new ServiceResponse<LoginResponseDto>(null, false, "Token cannot be created");
+            }
+            var loginInfo = new LoginResponseDto()
+            {
+                Expire = tokenInfo.Data.Expire,
+                Token = tokenInfo.Data.Token,
             };
-            await _userRepository.Create(user);
-            return new ServiceResponse(true, string.Empty);
+            return new ServiceResponse<LoginResponseDto>(loginInfo, true, string.Empty);
         }
         private bool EmailIsValid(string emailaddress)
         {

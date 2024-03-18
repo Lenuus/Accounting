@@ -9,7 +9,7 @@ using Accounting.Domain;
 
 namespace Accounting.Domain
 {
-    public class Corporation : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class Corporation : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         [Required]

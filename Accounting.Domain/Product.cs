@@ -8,7 +8,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Accounting.Domain
 {
-    public class Product:IBaseEntity,ISoftDeletable, ITenantEntity
+    public class Product: IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public string Number { get; set; }

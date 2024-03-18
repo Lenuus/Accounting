@@ -25,7 +25,7 @@ namespace Accounting.Persistence.Interceptors
         {
             if (eventData.Context is null) return result;
 
-            foreach (var entry in eventData.Context.Change.Entries())
+            foreach (var entry in eventData.Context.ChangeTracker.Entries())
             {
                 if (entry is not { State: EntityState.Deleted, Entity: ISoftDeletable delete }) continue;
                 entry.State = EntityState.Modified;
@@ -44,7 +44,7 @@ namespace Accounting.Persistence.Interceptors
         {
             if (eventData.Context is null) return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-            foreach (var entry in eventData.Context.Change.Entries())
+            foreach (var entry in eventData.Context.ChangeTracker.Entries())
             {
                 if (entry is not { State: EntityState.Deleted, Entity: ISoftDeletable delete }) continue;
                 entry.State = EntityState.Modified;

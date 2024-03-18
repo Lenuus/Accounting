@@ -42,6 +42,16 @@ namespace Accounting.Application
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteByReferenceId(Guid referenceId)
+        {
+            var query = _table.Find(referenceId);
+            if (query == null)
+                throw new Exception("Not Found");
+
+            _table.Remove(query);
+            await _context.SaveChangesAsync();
+        }
+
         public IQueryable<Table> GetAll()
         {
             return _table;

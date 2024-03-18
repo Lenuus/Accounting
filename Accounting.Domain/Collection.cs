@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class Collection : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class Collection : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public Guid CorporationId { get; set; }
@@ -20,7 +20,6 @@ namespace Accounting.Domain
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
         public Guid TenantId { get; set; }
-
         public ICollection<CollectionDocument> CollectionDocuments { get; set; }
 
         #region Audit

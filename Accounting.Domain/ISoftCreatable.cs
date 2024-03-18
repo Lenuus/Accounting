@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public interface ICreateInterceptor
+    public interface ISoftCreatable
     {
         public DateTime InsertedDate { get; set; }
         public Guid InsertedById { get; set; }

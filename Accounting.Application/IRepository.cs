@@ -23,5 +23,7 @@ namespace Accounting.Application
 
         Task<Table> Create(Table entity);
 
+        Task DeleteByReferenceId(Guid referenceId);
+
     }
 }

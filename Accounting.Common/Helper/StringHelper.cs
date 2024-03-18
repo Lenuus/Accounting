@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Accountings.Common.Helpers
+namespace AccountingsTracker.Common.Helpers
 {
     public static class StringHelper
     {

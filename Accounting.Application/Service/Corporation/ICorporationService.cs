@@ -1,5 +1,5 @@
 ﻿using Accounting.Application.Service.Corporation.Dtos;
-using Accountings.Common.Dtos;
+using AccountingsTracker.Common.Dtos;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ namespace Accounting.Application.Service.Corporation
         Task<ServiceResponse> RemoveCorporation(Guid id);
         Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequest request);
         Task<ServiceResponse> UpdateCorporation(UpdateCorporationDto request);
+        Task<ServiceResponse> CreateCorporationRecord(CorporationRecordCreateRequestDto request);
+        Task<ServiceResponse> RemoveCorporationRecord(Guid id);
 
 
     }

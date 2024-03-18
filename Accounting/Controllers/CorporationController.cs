@@ -15,9 +15,9 @@ namespace Accounting.Controllers
         {
             _corporationService = corporationService;
         }
-
+        #region Corporation
         [HttpPost("Create-Corporation")]
-        [Authorize(Policy = "CreateCorporation")]
+        // [Authorize(Policy = "CreateCorporation")]
         public async Task<IActionResult> CreateCorporation([FromBody] CorporationRegisterRequestDto request)
         {
             var response = await _corporationService.CreateCorporation(request).ConfigureAwait(false);
@@ -32,13 +32,58 @@ namespace Accounting.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllCorporation([FromBody] GetAllCorporationRequest request)
         {
-            var corporations=await _corporationService.GetAllCorporations(request).ConfigureAwait(false);
+            var corporations = await _corporationService.GetAllCorporations(request).ConfigureAwait(false);
             if (!corporations.IsSuccesfull)
             {
                 return BadRequest(corporations);
             }
             return Ok(corporations);
-
         }
+        [HttpPost("Delete-Corporation")]
+        public async Task<IActionResult> DeleteCorporation([FromBody] Guid id)
+        {
+            var response = await _corporationService.RemoveCorporation(id).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        [HttpPost("Update-Corporation")]
+        public async Task<IActionResult> UpdateCorporation([FromBody] UpdateCorporationDto request)
+        {
+            var response = await _corporationService.UpdateCorporation(request).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        #endregion
+
+
+        #region CorporationRecord
+        [HttpPost("Create-CorporationRecord")]
+        public async Task<IActionResult> CreateCorporationRecord([FromBody] CorporationRecordCreateRequestDto request)
+        {
+            var response = await _corporationService.CreateCorporationRecord(request).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+        [HttpPost("Delete-CorporationRecord")]
+        public async Task<IActionResult> DeleteCorporationRecord([FromBody] Guid id)
+        {
+            var response = await _corporationService.RemoveCorporationRecord(id).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        #endregion
     }
 }

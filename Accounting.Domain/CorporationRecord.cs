@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class CorporationRecord : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class CorporationRecord : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public Guid CorporationId { get; set; }

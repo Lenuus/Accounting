@@ -13,6 +13,7 @@ namespace Accounting.Application.Service.Corporation.Mapping
         public CorporationMapper() 
         {
             CreateMap<CorporationRegisterRequestDto, Domain.Corporation>();
+            CreateMap<CorporationRecordCreateRequestDto,Domain.CorporationRecord>();
         }
 
     }

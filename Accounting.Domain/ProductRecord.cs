@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class ProductRecord : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class ProductRecord : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public Guid ProductId { get; set; }
@@ -23,7 +23,6 @@ namespace Accounting.Domain
         #region Audit
         public DateTime InsertedDate { get; set; }
         public Guid InsertedById { get; set; }
-
         public DateTime UpdatedDate { get; set; }
         public Guid? UpdatedById { get; set; }
 

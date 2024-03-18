@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Accountings.Common.Constants;
+using AccountingsTracker.Common.Constants;
 using System.Security.Claims;
 
 namespace Accounting.Common.Helpers

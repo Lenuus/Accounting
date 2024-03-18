@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class CollectionDocument : IBaseEntity, ISoftDeletable, ITenantEntity
+    public class CollectionDocument : IBaseEntity, ISoftDeletable, ITenantEntity,ISoftCreatable,ISoftUpdatable
     {
         public Guid Id { get; set; }
         public Guid CollectionId { get; set; }
