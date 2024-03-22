@@ -8,7 +8,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Accounting.Domain
 {
-    public class Product: IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
+    public class Product : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public string Number { get; set; }
@@ -18,8 +18,9 @@ namespace Accounting.Domain
         public decimal Tax { get; set; }
         public decimal CurrentStock { get; set; }
         public List<ProductProperty> Properties { get; set; } = new List<ProductProperty>();
-        public List<ProductImage> Image { get; set; } = new List<ProductImage>();
-        public List<ProductRecord> ProductRecord { get; set; }
+        public List<ProductImage> Images { get; set; } = new List<ProductImage>();
+        public List<ProductRecord> ProductRecords { get; set; } = new List<ProductRecord>();
+        public List<ProductOrder> Orders { get; set; }
         public Guid TenantId { get; set; }
         #region Audit
         public DateTime InsertedDate { get; set; }
@@ -30,6 +31,5 @@ namespace Accounting.Domain
         public Guid? DeletedById { get; set; }
         public bool IsDeleted { get; set; }
         #endregion
-
     }
 }

@@ -46,5 +46,16 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
+
+        [HttpPost("GetAll-Order")]
+        public async Task<IActionResult> GetAllOrders([FromBody] GetAllOrderRequestDto request)
+        {
+            var response= await _orderService.GetAllOrder(request).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
     }
 }

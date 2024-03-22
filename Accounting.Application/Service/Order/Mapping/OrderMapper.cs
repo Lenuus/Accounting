@@ -12,7 +12,7 @@ namespace Accounting.Application.Service.Order.Mapping
     {
         public OrderMapper()
         {
-            CreateMap<OrderCreateRequestDto, Domain.Order>();
+            CreateMap<OrderCreateRequestDto, Domain.Order>().ForMember(dest => dest.Products, opt => opt.Ignore());
         }
     }
 }

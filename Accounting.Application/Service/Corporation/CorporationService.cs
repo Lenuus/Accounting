@@ -44,49 +44,55 @@ namespace Accounting.Application.Service.Corporation
             var loggedUserId = _claimManager.GetUserId();
             var loggedTenantId = _claimManager.GetTenantId();
             var query = await _corporationRepository.GetAll()
-                 .Include(f => f.Orders).Include(f => f.CorporationRecords)
-                 .Where(f => !f.IsDeleted &&
-                             f.TenantId == loggedTenantId &&
-                             (!string.IsNullOrEmpty(request.Search) ? EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Search}%") : true))
-                 .Select(f => new CorporationListDto
-                 {
-                     Number = f.Number,
-                     State = f.State,
-                     Address = f.Address,
-                     City = f.City,
-                     CorporationType = f.CorporationType,
-                     CurrentBalance = f.CurrentBalance,
-                     TCKN = f.TCKN,
-                     VKN = f.VKN,
-                     Title = f.Title,
-                     Country = f.Country,
-                     CorporationRecord = f.CorporationRecords.Where(f => !f.IsDeleted).Select(f => new CorporationRecordDetailDto
-                     {
-                         Id = f.Id,
-                         CorporationId = f.CorporationId,
-                         ActDate = f.ActDate,
-                         ActType = f.ActType,
-                         LastDate = f.LastDate,
-                         Price = f.Price,
-                         InOut = f.InOut,
-                         ReferenceId = f.ReferenceId,
-                         TenantId = f.TenantId,
+            .Include(f => f.Orders)
+            .Include(f => f.CorporationRecords)
+            .Where(f => !f.IsDeleted &&
+                     f.TenantId == loggedTenantId &&
+                     (string.IsNullOrEmpty(request.Number) || EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Number}%")) &&
+                     (string.IsNullOrEmpty(request.VKN) || f.VKN.Contains(request.VKN)) &&
+                     (string.IsNullOrEmpty(request.TCKN) || f.TCKN.Contains(request.TCKN) &&
+                     (string.IsNullOrEmpty(request.City) || f.City == request.City) &&
+                     (string.IsNullOrEmpty(request.State) || f.State == request.State) &&
+                     (string.IsNullOrEmpty(request.Country) || f.Country == request.Country)))
+                   .Select(f => new CorporationListDto
+                   {
+                       Number = f.Number,
+                       State = f.State,
+                       Address = f.Address,
+                       City = f.City,
+                       CorporationType = f.CorporationType,
+                       CurrentBalance = f.CurrentBalance,
+                       TCKN = f.TCKN,
+                       VKN = f.VKN,
+                       Title = f.Title,
+                       Country = f.Country,
+                       CorporationRecord = f.CorporationRecords.Where(f => !f.IsDeleted).Select(f => new CorporationRecordDetailDto
+                       {
+                           Id = f.Id,
+                           CorporationId = f.CorporationId,
+                           ActDate = f.ActDate,
+                           ActType = f.ActType,
+                           LastDate = f.LastDate,
+                           Price = f.Price,
+                           InOut = f.InOut,
+                           ReferenceId = f.ReferenceId,
+                           TenantId = f.TenantId,
 
-                     }).ToList(),
-                     Order = f.Orders.Where(f => !f.IsDeleted).Select(f => new OrderDetailDto
-                     {
-                         Id = f.Id,
-                         CorporationId = f.CorporationId,
-                         Date = f.Date,
-                         LastDate = f.LastDate,
-                         NetPrice = f.NetPrice,
-                         Number = f.Number,
-                         TenantId = f.TenantId,
-                         TotalDiscount = f.TotalDiscount,
-                         TotalPrice = f.TotalPrice,
-                     }).ToList(),
+                       }).ToList(),
+                       Order = f.Orders.Where(f => !f.IsDeleted).Select(f => new OrderDetailDto
+                       {
+                           Id = f.Id,
+                           CorporationId = f.CorporationId,
+                           Date = f.Date,
+                           LastDate = f.LastDate,
+                           NetPrice = f.NetPrice,
+                           Number = f.Number,
+                           TenantId = f.TenantId,
+                           TotalDiscount = f.TotalDiscount,
+                           TotalPrice = f.TotalPrice,
+                       }).ToList(),
 
-                 }).ToPagedListAsync(request.PageSize, request.PageIndex).ConfigureAwait(false);
+                   }).ToPagedListAsync(request.PageSize, request.PageIndex).ConfigureAwait(false);
 
             return new ServiceResponse<PagedResponseDto<CorporationListDto>>(query, true, string.Empty);
         }
@@ -153,8 +159,8 @@ namespace Accounting.Application.Service.Corporation
             var entity = _mapper.Map<Domain.CorporationRecord>(request);
             var corporation = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
             entity.TenantId = _claimManager.GetTenantId();
+            //corporation.CorporationRecords.Add(entity);
             await _corporationrecordRepository.Create(entity).ConfigureAwait(false);
-            corporation.CorporationRecords.Add(entity);
             return new ServiceResponse(true, string.Empty);
         }
 

@@ -7,8 +7,13 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Corporation.Dtos
 {
-    public class GetAllCorporationRequest:PagedRequestDto
+    public class GetAllCorporationRequest : PagedRequestDto
     {
-        public string? Search { get; set; }
+        public string Number { get; set; }
+        public string VKN { get; set; }
+        public string TCKN { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Country { get; set; }
     }
 }

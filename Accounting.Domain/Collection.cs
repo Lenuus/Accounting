@@ -15,7 +15,7 @@ namespace Accounting.Domain
         public Corporation Corporation { get; set; }
         public string Number { get; set; }
         public decimal TotalPrice { get; set; }
-        public PaymentType PaymentType { get; set; }
+        public PaymentType PaymentType { get; set; }//ActType PaymentType farkı ne
         public bool InOut { get; set; }
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
