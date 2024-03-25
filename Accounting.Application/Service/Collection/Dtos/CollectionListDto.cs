@@ -19,6 +19,6 @@ namespace Accounting.Application.Service.Collection.Dtos
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
         public Guid TenantId { get; set; }
-        public ICollection<CollectionDocument> CollectionDocuments { get; set; }
+        public List<CollectionDocumentListDto> CollectionDocuments { get; set; } = new List<CollectionDocumentListDto>();    
     }
 }

@@ -31,6 +31,8 @@ namespace Accounting.Domain
         [Required]
         public CorporationType CorporationType { get; set; }
         public ICollection<CorporationRecord> CorporationRecords { get; set; }
+        public ICollection<Expenses> Expenses { get; set; }
+        public ICollection<Collection> Collections { get; set; }
         public ICollection<Order> Orders { get; set; }
         [Required]
         public Guid TenantId { get; set; }

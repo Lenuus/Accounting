@@ -22,8 +22,8 @@ namespace Accounting.Application.Service.Corporation.Dtos
         public string Country { get; set; }
         public decimal CurrentBalance { get; set; }
         public CorporationType CorporationType { get; set; }
-        public ICollection<CorporationRecordDetailDto> CorporationRecord { get; set; }
-        public ICollection<OrderDetailDto> Order { get; set; }
+        public List<CorporationRecordDetailDto> CorporationRecord { get; set; } = new List<CorporationRecordDetailDto>();
+        public List<OrderDetailDto> Order { get; set; } = new List<OrderDetailDto>();
         public Guid TenantId { get; set; }
     }
 }

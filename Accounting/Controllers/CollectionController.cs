@@ -57,16 +57,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [HttpPost("Create-CollectionDocument")]
-        public async Task<IActionResult> CreateCollectionDocument(CreateCollectionDocumentRequestDto request)
-        {
-            var response = await _collectionService.CreateCollectionDocument(request).ConfigureAwait(false);
-            if (response == null)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
-        }
+
         [HttpPost("Delete-CollectionDocument")]
         public async Task<IActionResult> DeleteCollectionDocument(Guid id)
         {
@@ -77,15 +68,6 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-        [HttpPost("Update-CollectionDocument")]
-        public async Task<IActionResult> UpdateCollectionDocument(UpdateCollectionDocumentRequestDto request)
-        {
-            var response = await _collectionService.UpdateCollectionDocument(request).ConfigureAwait(false);
-            if (response == null)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
-        }
+
     }
 }

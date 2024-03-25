@@ -1,6 +1,7 @@
 ﻿using Accounting.Domain;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,11 +12,17 @@ namespace Accounting.Domain
     public class Product : IBaseEntity, ISoftDeletable, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
+        [Required]
         public string Number { get; set; }
+        [Required]
         public string Barcode { get; set; }
+        [Required]
         public decimal PurchasePrice { get; set; }
+        [Required]
         public decimal SellingPrice { get; set; }
+        [Required]
         public decimal Tax { get; set; }
+        [Required]
         public decimal CurrentStock { get; set; }
         public List<ProductProperty> Properties { get; set; } = new List<ProductProperty>();
         public List<ProductImage> Images { get; set; } = new List<ProductImage>();

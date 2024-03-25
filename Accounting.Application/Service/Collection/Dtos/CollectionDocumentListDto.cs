@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Collection.Dtos
 {
-    public class UpdateCollectionDocumentRequestDto
+    public class CollectionDocumentListDto
     {
         public Guid Id { get; set; }
         public Guid CollectionId { get; set; }

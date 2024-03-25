@@ -79,18 +79,6 @@ namespace Accounting.Application.Service.Corporation
                            TenantId = f.TenantId,
 
                        }).ToList(),
-                       Order = f.Orders.Where(f => !f.IsDeleted).Select(f => new OrderDetailDto
-                       {
-                           Id = f.Id,
-                           CorporationId = f.CorporationId,
-                           Date = f.Date,
-                           LastDate = f.LastDate,
-                           NetPrice = f.NetPrice,
-                           Number = f.Number,
-                           TenantId = f.TenantId,
-                           TotalDiscount = f.TotalDiscount,
-                           TotalPrice = f.TotalPrice,
-                       }).ToList(),
 
                    }).ToPagedListAsync(request.PageSize, request.PageIndex).ConfigureAwait(false);
 
@@ -157,7 +145,7 @@ namespace Accounting.Application.Service.Corporation
                 return new ServiceResponse(false, "Request is not valid");
             }
             var entity = _mapper.Map<Domain.CorporationRecord>(request);
-            var corporation = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
+            //var corporation = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
             entity.TenantId = _claimManager.GetTenantId();
             //corporation.CorporationRecords.Add(entity);
             await _corporationrecordRepository.Create(entity).ConfigureAwait(false);

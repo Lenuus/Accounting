@@ -20,6 +20,7 @@ namespace Accounting.Application.Service.Order.Dtos
         public decimal NetPrice { get; set; }
         public decimal TotalPrice { get; set; }
         public decimal TotalDiscount { get; set; }
+        public bool InOut { get; set; }
         public Guid TenantId { get; set; }
         public List<ProductDetailDto> Products { get; set; }
     }

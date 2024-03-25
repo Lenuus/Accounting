@@ -8,12 +8,12 @@ namespace Accounting.Common.Enum
 {
     public enum ActType
     {
-        None,
         PromptNote,
         Check,
         Cash,
         CreditCard,
         Transfer,
+        None,
         Order,
         Other
     }

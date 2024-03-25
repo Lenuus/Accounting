@@ -15,10 +15,6 @@ namespace Accounting.Application.Service.Collection
         Task<ServiceResponse> DeleteCollection(Guid id);
         Task<ServiceResponse> UpdateCollection(UpdateCollectionRequestDto request);
         Task<ServiceResponse<PagedResponseDto<CollectionListDto>>> GetAllCollections(GetAllCollectionRequest request);
-        Task<ServiceResponse> CreateCollectionDocument(CreateCollectionDocumentRequestDto request);
         Task<ServiceResponse> DeleteCollectionDocument(Guid id);
-        Task<ServiceResponse> UpdateCollectionDocument(UpdateCollectionDocumentRequestDto request);
-
-
     }
 }

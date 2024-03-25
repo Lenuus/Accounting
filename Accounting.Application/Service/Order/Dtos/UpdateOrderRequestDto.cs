@@ -12,11 +12,14 @@ namespace Accounting.Application.Service.Order.Dtos
     public class UpdateOrderRequestDto
     {
         public Guid Id { get; set; }
+        [AllowNull]
         public Guid CorporationId { get; set; }
-        public List<OrderProductDto> Products { get; set; }
         public string Number { get; set; }
+        [AllowNull]
         public DateTime Date { get; set; }
+        [AllowNull]
         public DateTime LastDate { get; set; }
+        [AllowNull]
         public ActType ActType { get; set; }
         [AllowNull]
         public decimal NetPrice { get; set; }
@@ -26,5 +29,9 @@ namespace Accounting.Application.Service.Order.Dtos
         public decimal TotalDiscount { get; set; }
         [AllowNull]
         public decimal TotalTaxAmount { get; set; }
+        [AllowNull]
+        public bool InOut { get; set; }
+        public List<OrderProductDto> Products { get; set; } = new List<OrderProductDto>();
+
     }
 }

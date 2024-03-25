@@ -1,6 +1,7 @@
 ﻿using Accounting.Domain;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,11 +11,13 @@ namespace Accounting.Domain
     public class ProductImage : ISoftDeletable, IBaseEntity, ITenantEntity, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
+        [Required]
         public Guid ProductId { get; set; }
         public Product Product { get; set; }
         public string Path { get; set; }
         public string Name { get; set; }
         public int DisplayOrder { get; set; }
+        [Required]
         public Guid TenantId { get; set; }
 
         #region Audit

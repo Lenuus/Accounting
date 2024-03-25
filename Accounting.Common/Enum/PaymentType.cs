@@ -8,11 +8,12 @@ namespace Accounting.Common.Enum
 {
     public enum PaymentType
     {
-        None,
         PromptNote,
         Check,
         Cash,
         CreditCard,
-        Transfer
+        Transfer,
+        None,
     }
 }
+

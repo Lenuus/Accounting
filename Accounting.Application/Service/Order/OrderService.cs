@@ -1,6 +1,7 @@
 ﻿using Accounting.Application.Service.Corporation.Dtos;
 using Accounting.Application.Service.Order.Dtos;
 using Accounting.Application.Service.Product.Dtos;
+using Accounting.Common.Enum;
 using Accounting.Common.Helpers;
 using Accounting.Domain;
 using AccountingsTracker.Common.Dtos;
@@ -32,8 +33,7 @@ namespace Accounting.Application.Service.Order
             _corporationRecordRepository = corporationRecordRepository;
             _productRepository = productRepository;
         }
-        // TotalPrice NetPrice(Kdv eklenmemiş ana fiyat) DiscountPrice(İndirimliFiyat) Tax(Kdv)
-        //Dışarıdan vergi eklenmemiş ürün fiyatları ile ürünlerden istenilen stok gelicek
+
         public async Task<ServiceResponse> CreateOrder(OrderCreateRequestDto request)
         {
             if (request == null || request.Products == null || request.Products.Count == 0)
@@ -43,6 +43,7 @@ namespace Accounting.Application.Service.Order
             var mappedRequest = _mapper.Map<Domain.Order>(request);
             mappedRequest.Products = new List<ProductOrder>();
             mappedRequest.NetPrice = 0;
+
             foreach (var productDto in request.Products)
             {
                 var product = await _productRepository.GetById(productDto.Id).ConfigureAwait(false);
@@ -71,7 +72,7 @@ namespace Accounting.Application.Service.Order
                 {
                     ProductId = productDto.Id,
                     TenantId = _claimManager.GetTenantId(),
-                    InOut = true,//TODO:Sorulacak nasıl gönderilmeli
+                    InOut = true,
                     Quantity = productDto.Quantity,
                     Price = productDto.Price,
                     Discount = productDto.Discount,
@@ -123,10 +124,10 @@ namespace Accounting.Application.Service.Order
                 query.OrderBy(f => f.Date);
             }
 
-            var listedOrders=await query.Select(f => new OrderListDto
+            var listedOrders = await query.Select(f => new OrderListDto
             {
-                ActType = f.ActType,
                 CorporationId = f.CorporationId,
+                InOut = f.InOut,
                 Date = f.Date,
                 LastDate = f.LastDate,
                 TotalPrice = f.TotalPrice,
@@ -167,30 +168,63 @@ namespace Accounting.Application.Service.Order
         {
             if (request == null)
             {
-                return new ServiceResponse(false, "request is not valid");
+                return new ServiceResponse(false, "Request is not valid");
             }
 
             var order = await _orderRepository.GetById(request.Id).ConfigureAwait(false);
             if (order == null)
             {
-                return new ServiceResponse(false, "requested order cannot be found");
-            }
-            order.Id = request.Id;
-            foreach (var product in request.Products)
-            {
-                var productTax = (await _productRepository.GetById(product.Id).ConfigureAwait(false)).Tax;
-                order.NetPrice += product.Price;// vergisiz fiyat
-                order.TotalDiscount += product.Price * (product.Discount / 100);
-                order.TotalTaxAmount += product.Price * (productTax / 100);
-                order.TotalPrice += (request.NetPrice - request.TotalDiscount) + request.TotalTaxAmount;
+                return new ServiceResponse(false, "Requested order cannot be found");
             }
 
+            var originalOrder = CloneOrder(order);
+
             order.CorporationId = request.CorporationId;
-            order.ActType = request.ActType;
             order.LastDate = request.LastDate;
+            order.InOut = request.InOut;
             order.Date = request.Date;
             order.Number = request.Number;
 
+            foreach (var product in request.Products)
+            {
+                var productTax = (await _productRepository.GetById(product.Id).ConfigureAwait(false)).Tax;
+                order.NetPrice += product.Price; // Vergisiz fiyat
+                order.TotalDiscount += product.Price * (product.Discount / 100);
+                order.TotalTaxAmount += product.Price * (productTax / 100);
+                order.TotalPrice += (order.NetPrice - order.TotalDiscount) + order.TotalTaxAmount;
+            }
+
+            await _orderRepository.Update(order).ConfigureAwait(false);
+            var updateRecord = await updateCorpRecord(order).ConfigureAwait(false);
+
+            if (!updateRecord.IsSuccesfull)
+            {
+                await _orderRepository.Update(originalOrder).ConfigureAwait(false);
+
+                return new ServiceResponse(false, "Corporation Record cannot be updated");
+            }
+
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        private Domain.Order CloneOrder(Domain.Order order)
+        {
+            return new Domain.Order
+            {
+                Id = order.Id,
+                CorporationId = order.CorporationId,
+                LastDate = order.LastDate,
+                InOut = order.InOut,
+                Date = order.Date,
+                Number = order.Number,
+                NetPrice = order.NetPrice,
+                TotalDiscount = order.TotalDiscount,
+                TotalTaxAmount = order.TotalTaxAmount,
+                TotalPrice = order.TotalPrice
+            };
+        }
+        private async Task<ServiceResponse> updateCorpRecord(Domain.Order order)
+        {
             var orderCorpRecord = await _corporationRecordRepository.GetById(order.Id).ConfigureAwait(false);
             if (orderCorpRecord == null)
             {
@@ -201,8 +235,7 @@ namespace Accounting.Application.Service.Order
             orderCorpRecord.ActDate = order.Date;
             orderCorpRecord.LastDate = order.Date;
             orderCorpRecord.Price = order.TotalPrice;
-            orderCorpRecord.ActType = order.ActType;
-            await _orderRepository.Update(order).ConfigureAwait(false);
+            orderCorpRecord.InOut = order.InOut;
             await _corporationRecordRepository.Update(orderCorpRecord).ConfigureAwait(false);
             return new ServiceResponse(true, string.Empty);
         }
@@ -215,8 +248,8 @@ namespace Accounting.Application.Service.Order
                 CorporationId = order.CorporationId,
                 LastDate = order.LastDate,
                 Price = order.NetPrice,
-                ActType = order.ActType,
-                InOut = false,
+                ActType = ActType.Order,
+                InOut = order.InOut,
                 TenantId = order.TenantId,
                 ReferenceId = order.Id
             };

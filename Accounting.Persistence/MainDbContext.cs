@@ -59,8 +59,10 @@ namespace Accounting.Persistence
             modelBuilder.Entity<ProductImage>().HasOne(p => p.Product).WithMany(p => p.Images).HasForeignKey(p => p.ProductId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<ProductProperty>().HasOne(p => p.Product).WithMany(p => p.Properties).HasForeignKey(p => p.ProductId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Order>().HasOne(p => p.Corporation).WithMany(p => p.Orders).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<ProductOrder>().HasOne(p => p.Order).WithMany(p => p.Products).HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<ProductOrder>().HasOne(p => p.Product).WithMany(p => p.Orders).HasForeignKey(p => p.ProductId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Collection>().HasOne(p => p.Corporation).WithMany(p => p.Collections).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Expenses>().HasOne(p => p.Corporation).WithMany(p => p.Expenses).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<ProductOrder>().HasOne(p => p.Order).WithMany(p => p.Products).HasForeignKey(p => p.OrderId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<ProductOrder>().HasOne(p => p.Product).WithMany(p => p.Orders).HasForeignKey(p => p.ProductId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             #endregion
         }
     }
