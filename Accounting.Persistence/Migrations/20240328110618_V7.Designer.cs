@@ -4,6 +4,7 @@ using Accounting.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Accounting.Persistence.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240328110618_V7")]
+    partial class V7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,7 +262,43 @@ namespace Accounting.Persistence.Migrations
                     b.ToTable("CorporationRecord", (string)null);
                 });
 
-            modelBuilder.Entity("Accounting.Domain.Expense", b =>
+            modelBuilder.Entity("Accounting.Domain.ExpenseType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InsertedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("InsertedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExpenseType");
+                });
+
+            modelBuilder.Entity("Accounting.Domain.Expenses", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -317,43 +356,7 @@ namespace Accounting.Persistence.Migrations
 
                     b.HasIndex("ExpenseTypeId");
 
-                    b.ToTable("Expense");
-                });
-
-            modelBuilder.Entity("Accounting.Domain.ExpenseType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("InsertedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("InsertedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ExpenseType");
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("Accounting.Domain.Order", b =>
@@ -923,7 +926,7 @@ namespace Accounting.Persistence.Migrations
                     b.Navigation("Corporation");
                 });
 
-            modelBuilder.Entity("Accounting.Domain.Expense", b =>
+            modelBuilder.Entity("Accounting.Domain.Expenses", b =>
                 {
                     b.HasOne("Accounting.Domain.Corporation", "Corporation")
                         .WithMany("Expenses")

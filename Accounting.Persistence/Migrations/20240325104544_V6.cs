@@ -102,14 +102,14 @@ namespace Accounting.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Expenses", x => x.Id);
+                    table.PrimaryKey("PK_expense", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Expenses_Corporation_CorporationId",
+                        name: "FK_expense_Corporation_CorporationId",
                         column: x => x.CorporationId,
                         principalTable: "Corporation",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Expenses_ExpenseType_ExpenseTypeId",
+                        name: "FK_expense_ExpenseType_ExpenseTypeId",
                         column: x => x.ExpenseTypeId,
                         principalTable: "ExpenseType",
                         principalColumn: "Id",
@@ -117,12 +117,12 @@ namespace Accounting.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Expenses_CorporationId",
+                name: "IX_expense_CorporationId",
                 table: "Expenses",
                 column: "CorporationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Expenses_ExpenseTypeId",
+                name: "IX_expense_ExpenseTypeId",
                 table: "Expenses",
                 column: "ExpenseTypeId");
 

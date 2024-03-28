@@ -14,7 +14,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost("Create-Collection")]
-        public async Task<IActionResult> CreateCollection(CreateCollectionRequestDto request)
+        public async Task<IActionResult> CreateCollection([FromBody]CreateCollectionRequestDto request)
         {
             var response = await _collectionService.CreateCollection(request).ConfigureAwait(false);
             if (response == null)
@@ -25,7 +25,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost("Delete-Collection")]
-        public async Task<IActionResult> DeleteCollection(Guid id)
+        public async Task<IActionResult> DeleteCollection([FromBody] Guid id)
         {
             var response = await _collectionService.DeleteCollection(id).ConfigureAwait(false);
             if (response == null)
@@ -36,7 +36,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost("GetAll-Collection")]
-        public async Task<IActionResult> GetAllCollection(GetAllCollectionRequest request)
+        public async Task<IActionResult> GetAllCollection([FromBody] GetAllCollectionRequest request)
         {
             var response = await _collectionService.GetAllCollections(request).ConfigureAwait(false);
             if (response == null)
@@ -47,7 +47,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost("Update-Collection")]
-        public async Task<IActionResult> UpdateCollection(UpdateCollectionRequestDto request)
+        public async Task<IActionResult> UpdateCollection([FromBody] UpdateCollectionRequestDto request)
         {
             var response = await _collectionService.UpdateCollection(request).ConfigureAwait(false);
             if (response == null)
@@ -59,7 +59,7 @@ namespace Accounting.Controllers
 
 
         [HttpPost("Delete-CollectionDocument")]
-        public async Task<IActionResult> DeleteCollectionDocument(Guid id)
+        public async Task<IActionResult> DeleteCollectionDocument([FromBody] Guid id)
         {
             var response = await _collectionService.DeleteCollectionDocument(id).ConfigureAwait(false);
             if (response == null)

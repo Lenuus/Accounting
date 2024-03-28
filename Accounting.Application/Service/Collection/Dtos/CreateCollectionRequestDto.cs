@@ -16,6 +16,6 @@ namespace Accounting.Application.Service.Collection.Dtos
         public bool InOut { get; set; }
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
-        public List<CreateCollectionDocumentRequestDto> CollectionDocuments { get; set; }= new List<CreateCollectionDocumentRequestDto>();
+        public List<CreateCollectionDocumentRequestDto> CollectionDocuments { get; set; } = new List<CreateCollectionDocumentRequestDto>();
     }
 }

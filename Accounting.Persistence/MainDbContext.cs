@@ -31,7 +31,7 @@ namespace Accounting.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            #region User Table and Naming
+            #region User Table Relation and Naming
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Role>().ToTable("Role");
             modelBuilder.Entity<UserClaim>().ToTable("UserClaim");
@@ -60,7 +60,7 @@ namespace Accounting.Persistence
             modelBuilder.Entity<ProductProperty>().HasOne(p => p.Product).WithMany(p => p.Properties).HasForeignKey(p => p.ProductId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Order>().HasOne(p => p.Corporation).WithMany(p => p.Orders).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Collection>().HasOne(p => p.Corporation).WithMany(p => p.Collections).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Expenses>().HasOne(p => p.Corporation).WithMany(p => p.Expenses).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Expense>().HasOne(p => p.Corporation).WithMany(p => p.Expenses).HasForeignKey(p => p.CorporationId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<ProductOrder>().HasOne(p => p.Order).WithMany(p => p.Products).HasForeignKey(p => p.OrderId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<ProductOrder>().HasOne(p => p.Product).WithMany(p => p.Orders).HasForeignKey(p => p.ProductId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);
             #endregion

@@ -11,7 +11,6 @@ namespace Accounting.Application.Service.Order.Dtos
     public class OrderCreateRequestDto
     {
         public Guid CorporationId { get; set; }
-        public List<OrderProductDto> Products { get; set; }
         public string Number { get; set; }
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
@@ -19,6 +18,8 @@ namespace Accounting.Application.Service.Order.Dtos
         public decimal? TotalPrice { get; set; }
         public decimal? TotalDiscount { get; set; }
         public decimal? TotalTaxAmount { get; set; }
+        public List<OrderProductDto> Products { get; set; }
+
 
     }
 }

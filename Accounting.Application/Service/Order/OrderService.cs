@@ -14,6 +14,7 @@ using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Accounting.Application.Service.Order
 {
@@ -44,63 +45,75 @@ namespace Accounting.Application.Service.Order
             mappedRequest.Products = new List<ProductOrder>();
             mappedRequest.NetPrice = 0;
 
-            foreach (var productDto in request.Products)
+
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var product = await _productRepository.GetById(productDto.Id).ConfigureAwait(false);
-                if (product == null)
+                try
                 {
-                    return new ServiceResponse(false, $"Product with ID {product.Barcode} not found");
+                    foreach (var productDto in request.Products)
+                    {
+                        var product = await _productRepository.GetById(productDto.Id).ConfigureAwait(false);
+                        if (product == null)
+                        {
+                            return new ServiceResponse(false, $"Product with ID {product.Barcode} not found");
+                        }
+
+                        if (product.CurrentStock < productDto.Quantity)
+                        {
+                            return new ServiceResponse(false, $"Insufficient stock for product with ID {product.Barcode}");
+                        }
+                        #region TotalPrice
+                        mappedRequest.NetPrice += productDto.Price;// vergisiz fiyat
+                        mappedRequest.TotalDiscount += product.SellingPrice * (productDto.Discount / 100);
+                        mappedRequest.TotalTaxAmount += productDto.Price * (product.Tax / 100);
+                        mappedRequest.TotalPrice += (mappedRequest.NetPrice - mappedRequest.TotalDiscount) + mappedRequest.TotalTaxAmount;
+                        product.CurrentStock -= productDto.Quantity;
+                        #endregion
+
+                        mappedRequest.Products.Add(new ProductOrder
+                        {
+                            ProductId = productDto.Id
+                        });
+                        product.ProductRecords.Add(new ProductRecord
+                        {
+                            ProductId = productDto.Id,
+                            TenantId = _claimManager.GetTenantId(),
+                            InOut = true,
+                            Quantity = productDto.Quantity,
+                            Price = productDto.Price,
+                            Discount = productDto.Discount,
+                            NetPrice = productDto.Quantity * productDto.Price,
+                            TotalPrice = (productDto.Quantity * productDto.Price * (1 - (productDto.Discount / 100)) * (1 + product.Tax / 100))
+                        });
+                        await _productRepository.Update(product).ConfigureAwait(false);
+                    }
+                    mappedRequest.TenantId = _claimManager.GetTenantId();
+
+                    var order = await _orderRepository.Create(mappedRequest).ConfigureAwait(false);
+                    if (order == null)
+                    {
+                        foreach (var productDto in request.Products)
+                        {
+                            var product = await _productRepository.GetById(productDto.Id).ConfigureAwait(false);
+                            product.CurrentStock += productDto.Quantity;
+                            await _productRepository.Update(product).ConfigureAwait(false);
+                        }
+
+                        return new ServiceResponse(false, "Failed to create order");
+                    }
+                    var record = await OrderRecord(order).ConfigureAwait(false);
+                    if (!record.IsSuccesfull)
+                    {
+                        return new ServiceResponse(false, "Record cannot be created");
+                    }
+                    scope.Complete();
                 }
-
-                if (product.CurrentStock < productDto.Quantity)
+                catch (Exception)
                 {
-                    return new ServiceResponse(false, $"Insufficient stock for product with ID {product.Barcode}");
+
+                    return new ServiceResponse(false, "Order could not Created");
                 }
-                #region TotalPrice
-                mappedRequest.NetPrice += productDto.Price;// vergisiz fiyat
-                mappedRequest.TotalDiscount += product.SellingPrice * (productDto.Discount / 100);
-                mappedRequest.TotalTaxAmount += productDto.Price * (product.Tax / 100);
-                mappedRequest.TotalPrice += (mappedRequest.NetPrice - mappedRequest.TotalDiscount) + mappedRequest.TotalTaxAmount;
-                product.CurrentStock -= productDto.Quantity;
-                #endregion
-
-                mappedRequest.Products.Add(new ProductOrder
-                {
-                    ProductId = productDto.Id
-                });
-                product.ProductRecords.Add(new ProductRecord
-                {
-                    ProductId = productDto.Id,
-                    TenantId = _claimManager.GetTenantId(),
-                    InOut = true,
-                    Quantity = productDto.Quantity,
-                    Price = productDto.Price,
-                    Discount = productDto.Discount,
-                    NetPrice = productDto.Quantity * productDto.Price,
-                    TotalPrice = (productDto.Quantity * productDto.Price * (1 - (productDto.Discount / 100)) * (1 + product.Tax / 100))
-                });
-                await _productRepository.Update(product).ConfigureAwait(false);
             }
-            mappedRequest.TenantId = _claimManager.GetTenantId();
-
-            var order = await _orderRepository.Create(mappedRequest).ConfigureAwait(false);
-            if (order == null)
-            {
-                foreach (var productDto in request.Products)
-                {
-                    var product = await _productRepository.GetById(productDto.Id).ConfigureAwait(false);
-                    product.CurrentStock += productDto.Quantity;
-                    await _productRepository.Update(product).ConfigureAwait(false);
-                }
-
-                return new ServiceResponse(false, "Failed to create order");
-            }
-            var record = await OrderRecord(order).ConfigureAwait(false);
-            if (!record.IsSuccesfull)
-            {
-                return new ServiceResponse(false, "Record cannot be created");
-            }
-
             return new ServiceResponse(true, string.Empty);
         }
 
@@ -151,7 +164,6 @@ namespace Accounting.Application.Service.Order
             return new ServiceResponse<PagedResponseDto<OrderListDto>>(listedOrders, true, string.Empty);
         }
 
-
         public async Task<ServiceResponse> RemoveOrder(Guid id)
         {
             var order = await _orderRepository.GetById(id).ConfigureAwait(false);
@@ -178,32 +190,42 @@ namespace Accounting.Application.Service.Order
             }
 
             var originalOrder = CloneOrder(order);
-
-            order.CorporationId = request.CorporationId;
-            order.LastDate = request.LastDate;
-            order.InOut = request.InOut;
-            order.Date = request.Date;
-            order.Number = request.Number;
-
-            foreach (var product in request.Products)
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var productTax = (await _productRepository.GetById(product.Id).ConfigureAwait(false)).Tax;
-                order.NetPrice += product.Price; // Vergisiz fiyat
-                order.TotalDiscount += product.Price * (product.Discount / 100);
-                order.TotalTaxAmount += product.Price * (productTax / 100);
-                order.TotalPrice += (order.NetPrice - order.TotalDiscount) + order.TotalTaxAmount;
+                try
+                {
+                    order.CorporationId = request.CorporationId;
+                    order.LastDate = request.LastDate;
+                    order.InOut = request.InOut;
+                    order.Date = request.Date;
+                    order.Number = request.Number;
+
+                    foreach (var product in request.Products)
+                    {
+                        var productTax = (await _productRepository.GetById(product.Id).ConfigureAwait(false)).Tax;
+                        order.NetPrice += product.Price; // Vergisiz fiyat
+                        order.TotalDiscount += product.Price * (product.Discount / 100);
+                        order.TotalTaxAmount += product.Price * (productTax / 100);
+                        order.TotalPrice += (order.NetPrice - order.TotalDiscount) + order.TotalTaxAmount;
+                    }
+
+                    await _orderRepository.Update(order).ConfigureAwait(false);
+                    var updateRecord = await updateCorpRecord(order).ConfigureAwait(false);
+
+                    if (!updateRecord.IsSuccesfull)
+                    {
+                        await _orderRepository.Update(originalOrder).ConfigureAwait(false);
+
+                        return new ServiceResponse(false, "Corporation Record cannot be updated");
+                    }
+                    scope.Complete();
+                }
+                catch (Exception)
+                {
+
+                    return new ServiceResponse(false, "Order Update failed");
+                }
             }
-
-            await _orderRepository.Update(order).ConfigureAwait(false);
-            var updateRecord = await updateCorpRecord(order).ConfigureAwait(false);
-
-            if (!updateRecord.IsSuccesfull)
-            {
-                await _orderRepository.Update(originalOrder).ConfigureAwait(false);
-
-                return new ServiceResponse(false, "Corporation Record cannot be updated");
-            }
-
             return new ServiceResponse(true, string.Empty);
         }
 

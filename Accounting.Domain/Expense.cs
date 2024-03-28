@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class Expenses
+    public class Expense : IBaseEntity, ISoftDeletable, ISoftCreatable, ISoftUpdatable
     {
         public Guid Id { get; set; }
         public Guid CorporationId { get; set; }
+        public Guid TenantId { get; set; }
         public Corporation Corporation { get; set; }
         [Required]
         public decimal Price { get; set; }
@@ -19,8 +20,16 @@ namespace Accounting.Domain
         [Required]
         public decimal TotalPrice { get; set; }
         [Required]
-        public ExpenseType ExpenseType { get; set; }
+        public ExpenseType ExpenseType { get; set; } = new ExpenseType();
         public string Description { get; set; }
-
+        [Required]
+        public string Name { get; set; }
+        public DateTime InsertedDate { get; set; }
+        public Guid InsertedById { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public Guid? UpdatedById { get; set; }
+        public DateTime DeletedDate { get; set; }
+        public Guid? DeletedById { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
