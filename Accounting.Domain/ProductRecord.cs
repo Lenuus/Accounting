@@ -27,6 +27,7 @@ namespace Accounting.Domain
         public decimal TotalPrice { get; set; }
         [Required]
         public Guid TenantId { get; set; }
+        public Guid ReferenceId { get; set; }
 
         #region Audit
         public DateTime InsertedDate { get; set; }

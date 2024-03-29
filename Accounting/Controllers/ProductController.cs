@@ -1,6 +1,7 @@
 ﻿using Accounting.Application.Service.Product;
 using Accounting.Application.Service.Product.Dtos;
 using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Accounting.Controllers
@@ -14,6 +15,7 @@ namespace Accounting.Controllers
             _productService = productService;
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Create-Product")]
         public async Task<IActionResult> CreateProduct([FromBody] ProductCreateRequestDto request)
         {
@@ -24,6 +26,8 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
+
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-Product")]
         public async Task<IActionResult> DeleteOrder([FromBody] Guid id)
         {
@@ -35,6 +39,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("GetAll-Product")]
         public async Task<IActionResult> GetAllProducts([FromBody] GetAllProductRequestDto request)
         {
@@ -46,6 +51,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Update-Product")]
         public async Task<IActionResult> UpdateProducts([FromBody] ProductUpdateRequestDto request)
         {

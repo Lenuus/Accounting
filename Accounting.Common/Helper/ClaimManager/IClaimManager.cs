@@ -17,6 +17,6 @@ namespace Accounting.Common.Helpers
 
         Guid GetTenantId();
 
-        string GetRole();
+        IEnumerable<string> GetRoles();
     }
 }

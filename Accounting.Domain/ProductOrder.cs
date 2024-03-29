@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class ProductOrder
+    public class ProductOrder : IBaseEntity
     {
         public Guid Id { get; set; }
         [Required]
@@ -16,6 +16,7 @@ namespace Accounting.Domain
         public Guid OrderId { get; set; }
         public Product Product { get; set; }
         public Order Order { get; set; }
+
     }
 
 }

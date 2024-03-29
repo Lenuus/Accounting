@@ -2,6 +2,7 @@
 using Accounting.Common.Enum;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,16 +11,15 @@ namespace Accounting.Application.Service.Order.Dtos
 {
     public class OrderCreateRequestDto
     {
+        [Required]
         public Guid CorporationId { get; set; }
+        [Required]
         public string Number { get; set; }
+        [Required]
         public DateTime Date { get; set; }
+        [Required]
         public DateTime LastDate { get; set; }
-        public decimal? NetPrice { get; set; }
-        public decimal? TotalPrice { get; set; }
-        public decimal? TotalDiscount { get; set; }
-        public decimal? TotalTaxAmount { get; set; }
         public List<OrderProductDto> Products { get; set; }
-
 
     }
 }

@@ -266,7 +266,7 @@ namespace Accounting.Application.Service.Collection
 
         private async Task<ServiceResponse> updateCorpRecord(Domain.Collection collection)
         {
-            var corpRecord = await _corporationRecordRepository.GetById(collection.Id).ConfigureAwait(false);
+            var corpRecord = await _corporationRecordRepository.GetCorpRecordByReferenceId(collection.Id).ConfigureAwait(false);
             if (corpRecord == null)
             {
                 return new ServiceResponse(false, "Corporation Record cannot found");

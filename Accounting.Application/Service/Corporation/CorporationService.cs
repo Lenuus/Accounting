@@ -144,10 +144,13 @@ namespace Accounting.Application.Service.Corporation
             {
                 return new ServiceResponse(false, "Request is not valid");
             }
+            var corp= await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
+            if (corp==null)
+            {
+                return new ServiceResponse(false,"The Corporation you want is not exist in records");
+            }
             var entity = _mapper.Map<Domain.CorporationRecord>(request);
-            //var corporation = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
             entity.TenantId = _claimManager.GetTenantId();
-            //corporation.CorporationRecords.Add(entity);
             await _corporationrecordRepository.Create(entity).ConfigureAwait(false);
             return new ServiceResponse(true, string.Empty);
         }

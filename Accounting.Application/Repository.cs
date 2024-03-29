@@ -26,6 +26,7 @@ namespace Accounting.Application
             return entity;
         }
 
+
         public async Task Delete(Table entity)
         {
             _table.Remove(entity);
@@ -42,15 +43,6 @@ namespace Accounting.Application
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteByReferenceId(Guid referenceId)
-        {
-            var query = _table.Find(referenceId);
-            if (query == null)
-                throw new Exception("Not Found");
-
-            _table.Remove(query);
-            await _context.SaveChangesAsync();
-        }
 
         public IQueryable<Table> GetAll()
         {
@@ -64,7 +56,6 @@ namespace Accounting.Application
                 throw new Exception("Not Found");
 
             return query;
-
         }
 
         public async Task<Table> GetByTenantId(Guid tenantId)
@@ -81,6 +72,21 @@ namespace Accounting.Application
 
             await _context.SaveChangesAsync();
 
+        }
+        public IQueryable<ProductOrder> GetProductOrdersByOrderId(Guid orderId)
+        {
+            var query = _context.ProductOrders.Where(po => po.OrderId == orderId);
+            if (!query.Any())
+                throw new Exception("No Product Orders found for the given Order ID");
+            return query;
+        }
+
+        public Task<CorporationRecord> GetCorpRecordByReferenceId(Guid ReferenceId)
+        {
+            var query =  _context.CorporationRecords.FirstOrDefaultAsync(po => po.ReferenceId == ReferenceId);
+            if (query == null)
+                throw new Exception("No Corp Record found for the given Ref ID");
+            return query;
         }
     }
 }

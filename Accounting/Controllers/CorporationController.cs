@@ -16,8 +16,8 @@ namespace Accounting.Controllers
             _corporationService = corporationService;
         }
         #region Corporation
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Create-Corporation")]
-        // [Authorize(Policy = "CreateCorporation")]
         public async Task<IActionResult> CreateCorporation([FromBody] CorporationRegisterRequestDto request)
         {
             var response = await _corporationService.CreateCorporation(request).ConfigureAwait(false);
@@ -28,8 +28,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("GetAll-Corporation")]
-        [Authorize]
         public async Task<IActionResult> GetAllCorporation([FromBody] GetAllCorporationRequest request)
         {
             var corporations = await _corporationService.GetAllCorporations(request).ConfigureAwait(false);
@@ -39,6 +39,8 @@ namespace Accounting.Controllers
             }
             return Ok(corporations);
         }
+
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-Corporation")]
         public async Task<IActionResult> DeleteCorporation([FromBody] Guid id)
         {
@@ -49,6 +51,8 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
+
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Update-Corporation")]
         public async Task<IActionResult> UpdateCorporation([FromBody] UpdateCorporationDto request)
         {
@@ -63,6 +67,8 @@ namespace Accounting.Controllers
 
 
         #region CorporationRecord
+
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Create-CorporationRecord")]
         public async Task<IActionResult> CreateCorporationRecord([FromBody] CorporationRecordCreateRequestDto request)
         {
@@ -73,6 +79,8 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
+
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-CorporationRecord")]
         public async Task<IActionResult> DeleteCorporationRecord([FromBody] Guid id)
         {

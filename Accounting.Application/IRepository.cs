@@ -23,7 +23,11 @@ namespace Accounting.Application
 
         Task<Table> Create(Table entity);
 
-        Task DeleteByReferenceId(Guid referenceId);
+        #region Custom
+        IQueryable<ProductOrder> GetProductOrdersByOrderId(Guid orderId);
+        Task<CorporationRecord> GetCorpRecordByReferenceId(Guid ReferenceId);
+
+        #endregion
 
     }
 }

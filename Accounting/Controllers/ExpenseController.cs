@@ -1,6 +1,7 @@
 ﻿using Accounting.Application;
 using Accounting.Application.Service.Expense;
 using Accounting.Application.Service.Expense.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Accounting.Controllers
@@ -13,7 +14,7 @@ namespace Accounting.Controllers
         {
             _expenseervice = expenseService;
         }
-
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Create-Expense")]
         public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequestDto request)
         {
@@ -24,7 +25,7 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Update-Expense")]
         public async Task<IActionResult> UpdateExpense([FromBody] UpdateExpenseRequestDto request)
         {
@@ -35,7 +36,7 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-Expense")]
         public async Task<IActionResult> DeleteExpense([FromBody] Guid id)
         {
@@ -47,6 +48,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("GetAll-Expense")]
         public async Task<IActionResult> GetAllExpenses([FromBody] GetAllExpenseRequestDto request)
         {

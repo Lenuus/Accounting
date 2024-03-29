@@ -25,14 +25,18 @@ namespace Accounting.Application.Service.Order
         private readonly IClaimManager _claimManager;
         private readonly IRepository<Domain.CorporationRecord> _corporationRecordRepository;
         private readonly IRepository<Domain.Product> _productRepository;
+        private readonly IRepository<Domain.ProductOrder> _productOrderRepository;
+        private readonly IRepository<Domain.ProductRecord> _productRecordRepository;
 
-        public OrderService(IRepository<Domain.Order> orderRepository, IMapper mapper, IClaimManager claimManager, IRepository<Domain.CorporationRecord> corporationRecordRepository, IRepository<Domain.Product> productRepository)
+        public OrderService(IRepository<Domain.Order> orderRepository, IMapper mapper, IClaimManager claimManager, IRepository<Domain.CorporationRecord> corporationRecordRepository, IRepository<Domain.Product> productRepository, IRepository<ProductOrder> productOrderRepository, IRepository<ProductRecord> productRecordRepository)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
             _claimManager = claimManager;
             _corporationRecordRepository = corporationRecordRepository;
             _productRepository = productRepository;
+            _productOrderRepository = productOrderRepository;
+            _productRecordRepository = productRecordRepository;
         }
 
         public async Task<ServiceResponse> CreateOrder(OrderCreateRequestDto request)
@@ -44,6 +48,7 @@ namespace Accounting.Application.Service.Order
             var mappedRequest = _mapper.Map<Domain.Order>(request);
             mappedRequest.Products = new List<ProductOrder>();
             mappedRequest.NetPrice = 0;
+            mappedRequest.Id = Guid.NewGuid();
 
 
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -63,16 +68,16 @@ namespace Accounting.Application.Service.Order
                             return new ServiceResponse(false, $"Insufficient stock for product with ID {product.Barcode}");
                         }
                         #region TotalPrice
-                        mappedRequest.NetPrice += productDto.Price;// vergisiz fiyat
-                        mappedRequest.TotalDiscount += product.SellingPrice * (productDto.Discount / 100);
-                        mappedRequest.TotalTaxAmount += productDto.Price * (product.Tax / 100);
+                        mappedRequest.NetPrice += productDto.Price * productDto.Quantity;// vergisiz fiyat
+                        mappedRequest.TotalDiscount += (productDto.Price * (productDto.Discount / 100)) * productDto.Quantity;
+                        mappedRequest.TotalTaxAmount += (productDto.Price * (product.Tax / 100)) * productDto.Quantity;
                         mappedRequest.TotalPrice += (mappedRequest.NetPrice - mappedRequest.TotalDiscount) + mappedRequest.TotalTaxAmount;
                         product.CurrentStock -= productDto.Quantity;
                         #endregion
 
                         mappedRequest.Products.Add(new ProductOrder
                         {
-                            ProductId = productDto.Id
+                            ProductId = productDto.Id,
                         });
                         product.ProductRecords.Add(new ProductRecord
                         {
@@ -83,7 +88,8 @@ namespace Accounting.Application.Service.Order
                             Price = productDto.Price,
                             Discount = productDto.Discount,
                             NetPrice = productDto.Quantity * productDto.Price,
-                            TotalPrice = (productDto.Quantity * productDto.Price * (1 - (productDto.Discount / 100)) * (1 + product.Tax / 100))
+                            TotalPrice = (productDto.Quantity * productDto.Price * (1 - (productDto.Discount / 100)) * (1 + product.Tax / 100)),
+                            ReferenceId = mappedRequest.Id
                         });
                         await _productRepository.Update(product).ConfigureAwait(false);
                     }
@@ -128,11 +134,11 @@ namespace Accounting.Application.Service.Order
               .Where(f => !f.IsDeleted && f.TenantId == loggedTenantId &&
                   (string.IsNullOrEmpty(request.Number) || EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Number}%")) &&
                   ((request.StartDate == null || request.StartDate <= f.Date) && (request.EndDate == null || request.EndDate >= f.LastDate)));
-            if (request.DateOrderAsc == true)
+            if (request.SortDirection == SortDirection.Descending)
             {
                 query.OrderByDescending(f => f.Date);
             }
-            if (request.DateOrderAsc == false)
+            if (request.SortDirection == SortDirection.Ascending)
             {
                 query.OrderBy(f => f.Date);
             }
@@ -194,19 +200,41 @@ namespace Accounting.Application.Service.Order
             {
                 try
                 {
+                    order.TotalDiscount = 0;
+                    order.NetPrice = 0;
+                    order.TotalPrice = 0;
+                    order.TotalTaxAmount = 0;
                     order.CorporationId = request.CorporationId;
                     order.LastDate = request.LastDate;
                     order.InOut = request.InOut;
                     order.Date = request.Date;
                     order.Number = request.Number;
+                    new List<ProductOrder>();
 
                     foreach (var product in request.Products)
                     {
-                        var productTax = (await _productRepository.GetById(product.Id).ConfigureAwait(false)).Tax;
-                        order.NetPrice += product.Price; // Vergisiz fiyat
-                        order.TotalDiscount += product.Price * (product.Discount / 100);
-                        order.TotalTaxAmount += product.Price * (productTax / 100);
+
+                        var currentProduct = await _productRepository.GetById(product.Id).ConfigureAwait(false);
+                        var productRecord = _productRecordRepository.GetAll().FirstOrDefault(f => f.ReferenceId == order.Id && f.ProductId == currentProduct.Id);
+                        var currentProductQuantity = productRecord.Quantity;
+                        var newCurrentStock = currentProduct.CurrentStock += currentProductQuantity;
+                        var updatedStock = newCurrentStock - product.Quantity;
+                        if (updatedStock <= 0)
+                        {
+                            new ServiceResponse(false, $"Not enough stock for the product with  {currentProduct.Barcode} Barcode Number ");
+                        }
+                        currentProduct.CurrentStock = updatedStock;
+                        var productTax = currentProduct.Tax;
+                        order.NetPrice += product.Price * product.Quantity; // Vergisiz fiyat
+                        order.TotalDiscount += (product.Price * (product.Discount / 100)) * product.Quantity;
+                        order.TotalTaxAmount += (product.Price * (productTax / 100)) * product.Quantity;
                         order.TotalPrice += (order.NetPrice - order.TotalDiscount) + order.TotalTaxAmount;
+
+                        productRecord.Discount = product.Discount;
+                        productRecord.TotalPrice = order.TotalPrice;
+                        productRecord.NetPrice = order.NetPrice;
+                        productRecord.Price = product.Price;
+                        productRecord.Quantity = product.Quantity;
                     }
 
                     await _orderRepository.Update(order).ConfigureAwait(false);
@@ -247,7 +275,7 @@ namespace Accounting.Application.Service.Order
         }
         private async Task<ServiceResponse> updateCorpRecord(Domain.Order order)
         {
-            var orderCorpRecord = await _corporationRecordRepository.GetById(order.Id).ConfigureAwait(false);
+            var orderCorpRecord = await _corporationRecordRepository.GetCorpRecordByReferenceId(order.Id).ConfigureAwait(false);
             if (orderCorpRecord == null)
             {
                 return new ServiceResponse(false, "Order record cannot found");
@@ -269,7 +297,7 @@ namespace Accounting.Application.Service.Order
                 ActDate = order.Date,
                 CorporationId = order.CorporationId,
                 LastDate = order.LastDate,
-                Price = order.NetPrice,
+                Price = order.TotalPrice,
                 ActType = ActType.Order,
                 InOut = order.InOut,
                 TenantId = order.TenantId,

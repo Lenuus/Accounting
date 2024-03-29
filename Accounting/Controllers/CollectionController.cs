@@ -1,5 +1,6 @@
 ﻿using Accounting.Application.Service.Collection;
 using Accounting.Application.Service.Collection.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Accounting.Controllers
@@ -12,7 +13,7 @@ namespace Accounting.Controllers
         {
             _collectionService = collectionService;
         }
-
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Create-Collection")]
         public async Task<IActionResult> CreateCollection([FromBody]CreateCollectionRequestDto request)
         {
@@ -24,6 +25,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-Collection")]
         public async Task<IActionResult> DeleteCollection([FromBody] Guid id)
         {
@@ -35,6 +37,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("GetAll-Collection")]
         public async Task<IActionResult> GetAllCollection([FromBody] GetAllCollectionRequest request)
         {
@@ -46,6 +49,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "EmployeeAndManagementPolicy")]
         [HttpPost("Update-Collection")]
         public async Task<IActionResult> UpdateCollection([FromBody] UpdateCollectionRequestDto request)
         {
@@ -57,7 +61,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-
+        [Authorize(Policy = "ManagementPolicy")]
         [HttpPost("Delete-CollectionDocument")]
         public async Task<IActionResult> DeleteCollectionDocument([FromBody] Guid id)
         {

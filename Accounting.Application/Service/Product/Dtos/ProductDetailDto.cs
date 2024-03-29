@@ -16,6 +16,7 @@ namespace Accounting.Application.Service.Product.Dtos
         public decimal SellingPrice { get; set; }
         public decimal Tax { get; set; }
         public decimal CurrentStock { get; set; }
+        public int OrderQuantity { get; set; }
         public List<ProductImageDto> Images { get; set; } = new List<ProductImageDto>();
         public List<ProductPropertyDto> Properties { get; set; }= new List<ProductPropertyDto>();   
     }

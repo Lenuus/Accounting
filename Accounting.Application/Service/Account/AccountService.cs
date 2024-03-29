@@ -108,20 +108,28 @@ namespace Accounting.Application.Service.Account
             claims.Add(new Claim(JwtTokenConstants.UserId, user.Id.ToString()));
             claims.Add(new Claim(ClaimTypes.Email, user.Email));
             claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
-            var roleName = user.Roles.FirstOrDefault().Role.Name;
-            claims.Add(new Claim(ClaimTypes.Role, roleName));
+
+            foreach (var role in user.Roles.Select(r => r.Role.Name))
+            {
+                claims.Add(new Claim("custom_role", role));
+               
+            }
+
             var tokenInfo = _authService.GenerateToken(claims);
             if (!tokenInfo.IsSuccesfull)
             {
                 return new ServiceResponse<LoginResponseDto>(null, false, "Token cannot be created");
             }
+
             var loginInfo = new LoginResponseDto()
             {
                 Expire = tokenInfo.Data.Expire,
                 Token = tokenInfo.Data.Token,
             };
+
             return new ServiceResponse<LoginResponseDto>(loginInfo, true, string.Empty);
         }
+
         private bool EmailIsValid(string emailaddress)
         {
             try

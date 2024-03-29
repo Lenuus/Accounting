@@ -27,6 +27,8 @@ namespace Accounting.Persistence
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductProperty> ProductProperties { get; set; }
         public DbSet<Tenant> Tenant { get; set; }
+        public DbSet<ProductOrder> ProductOrders { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

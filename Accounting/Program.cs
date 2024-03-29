@@ -1,11 +1,13 @@
 using Accounting.Application;
 using Accounting.Application.Service;
+using Accounting.Application.Service.AuthPolicy;
 using Accounting.Common.Helpers;
 using Accounting.Domain;
 using Accounting.Persistence;
 using Accounting.Persistence.Interceptors;
 using AccountingsTracker.Common.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +28,7 @@ builder.Services.AddIdentity<User, Role>()
                 .AddDefaultTokenProviders();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IAuthorizationHandler, RolePolicyHandler>();
 builder.Services.AddSingleton<PasswordHelper>();
 builder.Services.AddScoped<IClaimManager, ClaimManager>();
 builder.Services.AddScoped<SoftDeleteInterceptor>();
@@ -60,6 +63,27 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true
     };
 });
+builder.Services.AddAuthorization(options =>
+{
+
+    options.AddPolicy("ManagementRolePolicy", policyBuilder =>
+    {
+        policyBuilder.AddRequirements(new RolePolicyRequirement("Admin,Manager"));
+    });
+    options.AddPolicy("EmployeeRolePolicy", policyBuilder =>
+    {
+        policyBuilder.AddRequirements(new RolePolicyRequirement("Employee"));
+    });
+
+    options.AddPolicy("EmployeeAndManagementPolicy", policyBuilder =>
+        policyBuilder.RequireAssertion(context =>
+            context.User.IsInRole("Management") ||
+            context.User.IsInRole("Employee")));
+
+});
+
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

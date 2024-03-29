@@ -29,16 +29,24 @@ namespace Accounting.Common.Helpers
             return string.Empty;
         }
 
-        public string GetRole()
+        public IEnumerable<string> GetRoles()
         {
-            var roleClaim = GetClaims().FirstOrDefault(f => f.Type == ClaimTypes.Role);
-            if (roleClaim != null)
-            {
-                return roleClaim.Value;
-            }
+            var roleClaims = GetClaims()
+                .Where(f => f.Type == ClaimTypes.Role)
+                .Select(f => f.Value);
 
-            return string.Empty;
+            return roleClaims;
         }
+        //public string GetRole()
+        //{
+        //    var roleClaim = GetClaims().Select(f => f.Type == ClaimTypes.Role);
+        //    if (roleClaim != null)
+        //    {
+        //        return roleClaim.Value;
+        //    }
+
+        //    return string.Empty;
+        //}
 
         public Guid GetTenantId()
         {
