@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -25,17 +26,15 @@ namespace Accounting.Application.Service.Order
         private readonly IClaimManager _claimManager;
         private readonly IRepository<Domain.CorporationRecord> _corporationRecordRepository;
         private readonly IRepository<Domain.Product> _productRepository;
-        private readonly IRepository<Domain.ProductOrder> _productOrderRepository;
         private readonly IRepository<Domain.ProductRecord> _productRecordRepository;
 
-        public OrderService(IRepository<Domain.Order> orderRepository, IMapper mapper, IClaimManager claimManager, IRepository<Domain.CorporationRecord> corporationRecordRepository, IRepository<Domain.Product> productRepository, IRepository<ProductOrder> productOrderRepository, IRepository<ProductRecord> productRecordRepository)
+        public OrderService(IRepository<Domain.Order> orderRepository, IMapper mapper, IClaimManager claimManager, IRepository<Domain.CorporationRecord> corporationRecordRepository, IRepository<Domain.Product> productRepository, IRepository<ProductRecord> productRecordRepository)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
             _claimManager = claimManager;
             _corporationRecordRepository = corporationRecordRepository;
             _productRepository = productRepository;
-            _productOrderRepository = productOrderRepository;
             _productRecordRepository = productRecordRepository;
         }
 
@@ -132,8 +131,8 @@ namespace Accounting.Application.Service.Order
                .Include(f => f.Products)
               .ThenInclude(f => f.Product)
               .Where(f => !f.IsDeleted && f.TenantId == loggedTenantId &&
-                  (string.IsNullOrEmpty(request.Number) || EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Number}%")) &&
-                  ((request.StartDate == null || request.StartDate <= f.Date) && (request.EndDate == null || request.EndDate >= f.LastDate)));
+                  (!string.IsNullOrEmpty(request.Number) ? EF.Functions.Like(EF.Functions.Collate(f.Number, "SQL_Latin1_General_CP1_CI_AS"), $"%{request.Number}%") : true) &&
+                  ((request.StartDate.HasValue ? request.StartDate <= f.Date : true) && (request.EndDate.HasValue ? request.EndDate >= f.LastDate : true)));
             if (request.SortDirection == SortDirection.Descending)
             {
                 query.OrderByDescending(f => f.Date);
@@ -177,12 +176,35 @@ namespace Accounting.Application.Service.Order
             {
                 return new ServiceResponse(false, "Cant found");
             }
-            await _corporationRecordRepository.DeleteById(order.Id).ConfigureAwait(false);
-            await _orderRepository.DeleteById(id).ConfigureAwait(false);
-            return new ServiceResponse(true, string.Empty);
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    await _orderRepository.Delete(order).ConfigureAwait(false);
+                    var corpRecords = _corporationRecordRepository.GetByReferenceId(order.Id).ToList();
+                    var prodductRecords = _productRecordRepository.GetAll().Where(f => f.ReferenceId == order.Id).ToList();
+
+                    foreach (var document in corpRecords)
+                    {
+                        await _corporationRecordRepository.DeleteById(document.Id).ConfigureAwait(false);
+                    }
+                    foreach (var productRecord in prodductRecords)
+                    {
+                        await _productRecordRepository.Delete(productRecord).ConfigureAwait(false);
+                    }
+                    scope.Complete();
+                }
+                catch (Exception)
+                {
+
+                    return new ServiceResponse(false, "Delete process failed");
+                }
+
+                return new ServiceResponse(true, string.Empty);
+            }
         }
 
-        public async Task<ServiceResponse> UpdateOrder(UpdateOrderRequestDto request)
+        public async Task<ServiceResponse> UpdateOrder(OrderUpdateRequestDto request)
         {
             if (request == null)
             {
@@ -256,6 +278,44 @@ namespace Accounting.Application.Service.Order
             }
             return new ServiceResponse(true, string.Empty);
         }
+        public async Task<ServiceResponse> CancelOrder(Guid id)
+        {
+
+            var order = await _orderRepository.GetById(id).ConfigureAwait(false);
+            if (order == null)
+            {
+                return new ServiceResponse(false, "Cant found");
+            }
+            var productRecords = _productRecordRepository.GetAll().Where(f => f.ReferenceId == order.Id && !f.IsDeleted).ToList();
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    await _orderRepository.Delete(order).ConfigureAwait(false);
+                    var corpRec = _corporationRecordRepository.GetByReferenceId(order.Id).ToList();
+
+                    foreach (var document in corpRec)
+                    {
+                        await _corporationRecordRepository.DeleteById(document.Id).ConfigureAwait(false);
+                    }
+                    foreach (var productRecord in productRecords)
+                    {
+                        var product = await _productRepository.GetById(productRecord.ProductId).ConfigureAwait(false);
+                        product.CurrentStock += productRecord.Quantity;
+                        await _productRepository.Update(product).ConfigureAwait(false);
+                        await _productRecordRepository.Delete(productRecord).ConfigureAwait(false);
+                    }
+                    scope.Complete();
+                }
+                catch (Exception)
+                {
+
+                    return new ServiceResponse(false, "Delete process failed");
+                }
+
+                return new ServiceResponse(true, string.Empty);
+            }
+        }
 
         private Domain.Order CloneOrder(Domain.Order order)
         {
@@ -312,5 +372,7 @@ namespace Accounting.Application.Service.Order
             return new ServiceResponse(true, string.Empty);
         }
 
+
     }
 }
+

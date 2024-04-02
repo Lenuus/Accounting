@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Order.Dtos
 {
-    public class GetAllOrderRequestDto:PagedRequestDto
+    public class GetAllOrderRequestDto : PagedRequestDto
     {
         [AllowNull]
         public string Number { get; set; }

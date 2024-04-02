@@ -16,7 +16,7 @@ namespace Accounting.Controllers
             _corporationService = corporationService;
         }
         #region Corporation
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Create-Corporation")]
         public async Task<IActionResult> CreateCorporation([FromBody] CorporationRegisterRequestDto request)
         {
@@ -28,9 +28,9 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("GetAll-Corporation")]
-        public async Task<IActionResult> GetAllCorporation([FromBody] GetAllCorporationRequest request)
+        public async Task<IActionResult> GetAllCorporation([FromBody] GetAllCorporationRequestDto request)
         {
             var corporations = await _corporationService.GetAllCorporations(request).ConfigureAwait(false);
             if (!corporations.IsSuccesfull)
@@ -40,7 +40,7 @@ namespace Accounting.Controllers
             return Ok(corporations);
         }
 
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-Corporation")]
         public async Task<IActionResult> DeleteCorporation([FromBody] Guid id)
         {
@@ -52,9 +52,9 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Update-Corporation")]
-        public async Task<IActionResult> UpdateCorporation([FromBody] UpdateCorporationDto request)
+        public async Task<IActionResult> UpdateCorporation([FromBody] CorporationUpdateRequestDto request)
         {
             var response = await _corporationService.UpdateCorporation(request).ConfigureAwait(false);
             if (!response.IsSuccesfull)
@@ -68,7 +68,7 @@ namespace Accounting.Controllers
 
         #region CorporationRecord
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Create-CorporationRecord")]
         public async Task<IActionResult> CreateCorporationRecord([FromBody] CorporationRecordCreateRequestDto request)
         {
@@ -80,7 +80,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-CorporationRecord")]
         public async Task<IActionResult> DeleteCorporationRecord([FromBody] Guid id)
         {

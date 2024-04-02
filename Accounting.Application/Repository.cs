@@ -57,10 +57,9 @@ namespace Accounting.Application
 
             return query;
         }
-
-        public async Task<Table> GetByTenantId(Guid tenantId)
+        public IQueryable<CorporationRecord> GetByReferenceId(Guid referenceId)
         {
-            var query = await _table.FindAsync(tenantId);
+            var query = _context.CorporationRecords.Where(po => po.ReferenceId == referenceId);
             if (query == null)
                 throw new Exception("Not Found");
             return query;
@@ -83,7 +82,7 @@ namespace Accounting.Application
 
         public Task<CorporationRecord> GetCorpRecordByReferenceId(Guid ReferenceId)
         {
-            var query =  _context.CorporationRecords.FirstOrDefaultAsync(po => po.ReferenceId == ReferenceId);
+            var query = _context.CorporationRecords.FirstOrDefaultAsync(po => po.ReferenceId == ReferenceId);
             if (query == null)
                 throw new Exception("No Corp Record found for the given Ref ID");
             return query;

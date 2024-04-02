@@ -13,8 +13,10 @@ namespace Accounting.Application.Service.Order
     {
         Task<ServiceResponse> CreateOrder(OrderCreateRequestDto request);
         Task<ServiceResponse> RemoveOrder(Guid id);
-        Task<ServiceResponse> UpdateOrder(UpdateOrderRequestDto request);
+        Task<ServiceResponse> CancelOrder(Guid id);
+        Task<ServiceResponse> UpdateOrder(OrderUpdateRequestDto request);
         Task<ServiceResponse<PagedResponseDto<OrderListDto>>> GetAllOrder(GetAllOrderRequestDto request);
+
 
     }
 }

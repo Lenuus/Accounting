@@ -11,9 +11,9 @@ namespace Accounting.Application.Service.Collection
 {
     public interface ICollectionService : IApplicationService
     {
-        Task<ServiceResponse> CreateCollection(CreateCollectionRequestDto request);
+        Task<ServiceResponse> CreateCollection(CollectionCreateRequestDto request);
         Task<ServiceResponse> DeleteCollection(Guid id);
-        Task<ServiceResponse> UpdateCollection(UpdateCollectionRequestDto request);
+        Task<ServiceResponse> UpdateCollection(CollectionUpdateRequestDto request);
         Task<ServiceResponse<PagedResponseDto<CollectionListDto>>> GetAllCollections(GetAllCollectionRequest request);
         Task<ServiceResponse> DeleteCollectionDocument(Guid id);
     }

@@ -74,11 +74,16 @@ builder.Services.AddAuthorization(options =>
     {
         policyBuilder.AddRequirements(new RolePolicyRequirement("Employee"));
     });
+    options.AddPolicy("CommonRolePolicy", policyBuilder =>
+    {
+        policyBuilder.AddRequirements(new RolePolicyRequirement("Admin,Employee"));
+    });
 
     options.AddPolicy("EmployeeAndManagementPolicy", policyBuilder =>
-        policyBuilder.RequireAssertion(context =>
-            context.User.IsInRole("Management") ||
-            context.User.IsInRole("Employee")));
+    policyBuilder.RequireAssertion(context =>
+        context.User.IsInRole("Management") ||
+        context.User.IsInRole("Admin") ||
+        context.User.IsInRole("Employee")));
 
 });
 

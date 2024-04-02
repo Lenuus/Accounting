@@ -11,9 +11,9 @@ namespace Accounting.Application.Service.Expense
 {
     public interface IExpenseService : IApplicationService
     {
-        Task<ServiceResponse> CreateExpense(CreateExpenseRequestDto request);
+        Task<ServiceResponse> CreateExpense(ExpenseCreateRequestDto request);
         Task<ServiceResponse> DeleteExpense(Guid id);
-        Task<ServiceResponse> UpdateExpense(UpdateExpenseRequestDto request);
+        Task<ServiceResponse> UpdateExpense(ExpenseUpdateRequestDto request);
         Task<ServiceResponse<PagedResponseDto<ExpenseListDto>>> GetAllExpense(GetAllExpenseRequestDto request);
     }
 }

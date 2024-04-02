@@ -13,7 +13,7 @@ namespace Accounting.Application.Service.Expense.Mapping
     {
         public ExpenseMapper()
         {
-            CreateMap<CreateExpenseRequestDto, Domain.Expense>().ForMember(dest => dest.ExpenseType, opt => opt.Ignore());
+            CreateMap<ExpenseCreateRequestDto, Domain.Expense>().ForMember(dest => dest.ExpenseType, opt => opt.Ignore());
         }
     }
 }

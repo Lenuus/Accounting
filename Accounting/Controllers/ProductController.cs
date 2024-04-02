@@ -15,7 +15,7 @@ namespace Accounting.Controllers
             _productService = productService;
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Create-Product")]
         public async Task<IActionResult> CreateProduct([FromBody] ProductCreateRequestDto request)
         {
@@ -27,7 +27,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-Product")]
         public async Task<IActionResult> DeleteOrder([FromBody] Guid id)
         {
@@ -39,7 +39,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("GetAll-Product")]
         public async Task<IActionResult> GetAllProducts([FromBody] GetAllProductRequestDto request)
         {
@@ -51,7 +51,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Update-Product")]
         public async Task<IActionResult> UpdateProducts([FromBody] ProductUpdateRequestDto request)
         {

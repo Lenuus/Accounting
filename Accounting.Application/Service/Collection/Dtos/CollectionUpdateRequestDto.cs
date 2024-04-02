@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Collection.Dtos
 {
-    public class UpdateCollectionRequestDto
+    public class CollectionUpdateRequestDto
     {
         [Required]
         public Guid Id { get; set; }
@@ -20,6 +20,6 @@ namespace Accounting.Application.Service.Collection.Dtos
         public bool InOut { get; set; }
         public DateTime Date { get; set; }
         public DateTime LastDate { get; set; }
-        public List<UpdateCollectionDocumentRequestDto> Documents { get; set; } = new List<UpdateCollectionDocumentRequestDto>();
+        public List<CollectionDocumentUpdateRequestDto> Documents { get; set; } = new List<CollectionDocumentUpdateRequestDto>();
     }
 }

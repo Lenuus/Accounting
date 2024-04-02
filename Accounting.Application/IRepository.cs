@@ -13,7 +13,7 @@ namespace Accounting.Application
 
         Task<Table> GetById(Guid id);
 
-        Task<Table> GetByTenantId(Guid tenantId);
+        IQueryable<CorporationRecord> GetByReferenceId(Guid referenceId);
 
         Task DeleteById(Guid id);
 
@@ -25,6 +25,7 @@ namespace Accounting.Application
 
         #region Custom
         IQueryable<ProductOrder> GetProductOrdersByOrderId(Guid orderId);
+
         Task<CorporationRecord> GetCorpRecordByReferenceId(Guid ReferenceId);
 
         #endregion

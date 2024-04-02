@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class User : IdentityUser<Guid>, IBaseEntity, ISoftDeletable
+    public class User : IdentityUser<Guid>, IBaseEntity, ISoftDeletable, ISoftUpdatable, ISoftCreatable
     {
         public ICollection<UserRole> Roles { get; set; }
 

@@ -13,8 +13,8 @@ namespace Accounting.Application.Service.Corporation
     {
         Task<ServiceResponse> CreateCorporation(CorporationRegisterRequestDto request);
         Task<ServiceResponse> RemoveCorporation(Guid id);
-        Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequest request);
-        Task<ServiceResponse> UpdateCorporation(UpdateCorporationDto request);
+        Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequestDto request);
+        Task<ServiceResponse> UpdateCorporation(CorporationUpdateRequestDto request);
         Task<ServiceResponse> CreateCorporationRecord(CorporationRecordCreateRequestDto request);
         Task<ServiceResponse> RemoveCorporationRecord(Guid id);
 

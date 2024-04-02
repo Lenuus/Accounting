@@ -12,9 +12,9 @@ namespace Accounting.Application.Service.Collection.Mapping
     {
         public CollectionMapper()
         {
-            CreateMap<CreateCollectionRequestDto, Domain.Collection>().ForMember(dest => dest.CollectionDocuments, opt => opt.Ignore());
+            CreateMap<CollectionCreateRequestDto, Domain.Collection>().ForMember(dest => dest.CollectionDocuments, opt => opt.Ignore());
 
-            CreateMap<CreateCollectionDocumentRequestDto, Domain.CollectionDocument>();
+            CreateMap<CollectionDocumentCreateRequestDto, Domain.CollectionDocument>();
         }
     }
 }

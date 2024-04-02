@@ -53,6 +53,7 @@ namespace Accounting.Persistence
             modelBuilder.Entity<UserRole>().HasOne(p => p.User).WithMany(p => p.Roles).HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<UserRole>().HasOne(p => p.Role).WithMany(p => p.Users).HasForeignKey(p => p.RoleId).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<User>().Property(p => p.IsDeleted).HasDefaultValue(false);
+            modelBuilder.Entity<Role>().Property(p => p.IsDeleted).HasDefaultValue(false);
             #endregion
             #region Relations
             modelBuilder.Entity<CollectionDocument>().HasOne(p => p.Collection).WithMany(p => p.CollectionDocuments).HasForeignKey(p => p.CollectionId).IsRequired(true).OnDelete(DeleteBehavior.NoAction);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Collection.Dtos
 {
-    public class CreateCollectionRequestDto
+    public class CollectionCreateRequestDto
     {
         public Guid CorporationId { get; set; }
         [Required]
@@ -23,6 +23,6 @@ namespace Accounting.Application.Service.Collection.Dtos
         public DateTime Date { get; set; }
         [Required]
         public DateTime LastDate { get; set; }
-        public List<CreateCollectionDocumentRequestDto> CollectionDocuments { get; set; } = new List<CreateCollectionDocumentRequestDto>();
+        public List<CollectionDocumentCreateRequestDto> CollectionDocuments { get; set; } = new List<CollectionDocumentCreateRequestDto>();
     }
 }

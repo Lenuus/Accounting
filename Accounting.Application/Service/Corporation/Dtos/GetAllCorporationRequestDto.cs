@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Corporation.Dtos
 {
-    public class GetAllCorporationRequest : PagedRequestDto
+    public class GetAllCorporationRequestDto : PagedRequestDto
     {
         [AllowNull]
         public string Number { get; set; }

@@ -5,11 +5,6 @@ using AccountingsTracker.Common.Dtos;
 using AccountingsTracker.Common.Helpers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Accounting.Application.Service.Expense
@@ -30,7 +25,7 @@ namespace Accounting.Application.Service.Expense
             _claimManager = claimManager;
         }
 
-        public async Task<ServiceResponse> CreateExpense(CreateExpenseRequestDto request)
+        public async Task<ServiceResponse> CreateExpense(ExpenseCreateRequestDto request)
         {
             if (request == null)
             {
@@ -116,7 +111,7 @@ namespace Accounting.Application.Service.Expense
             return new ServiceResponse<PagedResponseDto<ExpenseListDto>>(expensesList, true, string.Empty);
         }
 
-        public async Task<ServiceResponse> UpdateExpense(UpdateExpenseRequestDto request)
+        public async Task<ServiceResponse> UpdateExpense(ExpenseUpdateRequestDto request)
         {
             var expense = await _expense.GetById(request.Id).ConfigureAwait(false);
             expense.Name = request.Name;

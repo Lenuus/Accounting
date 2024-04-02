@@ -27,6 +27,7 @@ namespace Accounting.Controllers
             return Ok(response);
 
         }
+
         [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-Order")]
         public async Task<IActionResult> DeleteOrder([FromBody] Guid id)
@@ -38,9 +39,22 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
+
+        [Authorize(Policy = "ManagementRolePolicy")]
+        [HttpPost("Cancel-Order")]
+        public async Task<IActionResult> CancelOrder([FromBody] Guid id)
+        {
+            var response = await _orderService.CancelOrder(id).ConfigureAwait(false);
+            if (!response.IsSuccesfull)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
         [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Update-Order")]
-        public async Task<IActionResult> UpdateOrder([FromBody] UpdateOrderRequestDto request)
+        public async Task<IActionResult> UpdateOrder([FromBody] OrderUpdateRequestDto request)
         {
             var response = await _orderService.UpdateOrder(request).ConfigureAwait(false);
             if (!response.IsSuccesfull)
@@ -49,7 +63,8 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("GetAll-Order")]
         public async Task<IActionResult> GetAllOrders([FromBody] GetAllOrderRequestDto request)
         {

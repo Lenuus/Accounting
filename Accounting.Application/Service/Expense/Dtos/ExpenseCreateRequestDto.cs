@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Expense.Dtos
 {
-    public class CreateExpenseRequestDto
+    public class ExpenseCreateRequestDto
     {
         [AllowNull]
         public Guid CorporationId { get; set; }

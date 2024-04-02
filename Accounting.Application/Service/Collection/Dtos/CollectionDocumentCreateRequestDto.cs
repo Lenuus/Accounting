@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Collection.Dtos
 {
-    public class CreateCollectionDocumentRequestDto
+    public class CollectionDocumentCreateRequestDto
     {
         [AllowNull] 
         public Guid CollectionId { get; set; }

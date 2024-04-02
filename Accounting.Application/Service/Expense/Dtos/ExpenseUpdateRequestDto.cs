@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Expense.Dtos
 {
-    public class UpdateExpenseRequestDto
+    public class ExpenseUpdateRequestDto
     {
         [Required]
         public Guid Id { get; set; }

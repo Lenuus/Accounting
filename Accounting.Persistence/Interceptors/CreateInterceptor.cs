@@ -57,4 +57,3 @@ namespace Accounting.Persistence.Interceptors
 }
 
 
-//TODO: Oncelikle Interceptorlar yazılacak sonra login Policy temelli ayarlanacak

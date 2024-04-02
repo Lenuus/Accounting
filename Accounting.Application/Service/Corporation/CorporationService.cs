@@ -20,7 +20,6 @@ namespace Accounting.Application.Service.Corporation
     public class CorporationService : ICorporationService
     {
         private readonly IRepository<Domain.Corporation> _corporationRepository;
-        private readonly IRepository<Domain.Order> _orderRepository;
         private readonly IRepository<Domain.CorporationRecord> _corporationrecordRepository;
         private readonly IMapper _mapper;
         private readonly IClaimManager _claimManager;
@@ -29,17 +28,15 @@ namespace Accounting.Application.Service.Corporation
             IRepository<Domain.Corporation> corporationRepository,
             IMapper mapper,
             IClaimManager claimManager,
-            IRepository<Domain.Order> orderRepository,
             IRepository<Domain.CorporationRecord> corporationrecordRepository)
         {
             _corporationRepository = corporationRepository;
             _mapper = mapper;
             _claimManager = claimManager;
-            _orderRepository = orderRepository;
             _corporationrecordRepository = corporationrecordRepository;
         }
 
-        public async Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequest request)
+        public async Task<ServiceResponse<PagedResponseDto<CorporationListDto>>> GetAllCorporations(GetAllCorporationRequestDto request)
         {
             var loggedUserId = _claimManager.GetUserId();
             var loggedTenantId = _claimManager.GetTenantId();
@@ -116,7 +113,7 @@ namespace Accounting.Application.Service.Corporation
             }
         }
 
-        public async Task<ServiceResponse> UpdateCorporation(UpdateCorporationDto request)
+        public async Task<ServiceResponse> UpdateCorporation(CorporationUpdateRequestDto request)
         {
             var corporation = await _corporationRepository.GetById(request.Id).ConfigureAwait(false);
             if (corporation == null)
@@ -144,10 +141,10 @@ namespace Accounting.Application.Service.Corporation
             {
                 return new ServiceResponse(false, "Request is not valid");
             }
-            var corp= await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
-            if (corp==null)
+            var corp = await _corporationRepository.GetById(request.CorporationId).ConfigureAwait(false);
+            if (corp == null)
             {
-                return new ServiceResponse(false,"The Corporation you want is not exist in records");
+                return new ServiceResponse(false, "The Corporation you want is not exist in records");
             }
             var entity = _mapper.Map<Domain.CorporationRecord>(request);
             entity.TenantId = _claimManager.GetTenantId();

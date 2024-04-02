@@ -7,16 +7,6 @@ using AccountingsTracker.Common.Dtos;
 using AccountingsTracker.Common.Helpers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Cryptography.Xml;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using System.Transactions;
 
 namespace Accounting.Application.Service.Collection
@@ -38,7 +28,7 @@ namespace Accounting.Application.Service.Collection
             _claimManager = claimManager;
         }
 
-        public async Task<ServiceResponse> CreateCollection(CreateCollectionRequestDto request)
+        public async Task<ServiceResponse> CreateCollection(CollectionCreateRequestDto request)
         {
             if (request == null)
             {
@@ -73,7 +63,6 @@ namespace Accounting.Application.Service.Collection
                     foreach (var collectionDocument in collectionDocuments)
                     {
                         await _collectionDocumentRepository.Create(collectionDocument).ConfigureAwait(false);
-                        return new ServiceResponse(false, "Olmadı gülüm");
                     }
                     scope.Complete();
                 }
@@ -93,7 +82,34 @@ namespace Accounting.Application.Service.Collection
             {
                 return new ServiceResponse(false, "Requested collection cannot found");
             }
-            await _collectionRepository.Delete(collection).ConfigureAwait(false);
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                try
+                {
+                    await _collectionRepository.Delete(collection).ConfigureAwait(false);
+
+                    var colDoc = _collectionDocumentRepository.GetAll().Where(f => f.CollectionId == id).ToList();
+                    if (colDoc.Any())
+                    {
+                        foreach (var document in colDoc)
+                        {
+                            await _collectionDocumentRepository.DeleteById(document.Id).ConfigureAwait(false);
+                        }
+                    }
+                    var corpRec = _corporationRecordRepository.GetByReferenceId(id).ToList();
+                    foreach (var document in corpRec)
+                    {
+                        await _corporationRecordRepository.DeleteById(document.Id).ConfigureAwait(false);
+                    }
+                    scope.Complete();
+                }
+                catch (Exception)
+                {
+
+                    return new ServiceResponse(false, "Delete process failed");
+                }
+            }
+
             return new ServiceResponse(true, string.Empty);
         }
 
@@ -147,33 +163,10 @@ namespace Accounting.Application.Service.Collection
                 }).ToList(),
             }).ToPagedListAsync(request.PageSize, request.PageIndex).ConfigureAwait(false);
 
-            //var collectionDocumentIds = collection.Data.Select(d => d.Id);
-            //var collectionDocuments = await _collectionDocumentRepository.GetAll().Where(f => !f.IsDeleted && collectionDocumentIds.Any(x => x == f.CollectionId) &&
-            //(f.TenantId == loggedTenantId)).Select(f => new
-            //{
-            //    f.Id,
-            //    f.Number,
-            //    f.LastDate,
-            //    f.Price,
-            //    f.CollectionId,
-            //}).ToListAsync().ConfigureAwait(false);
-
-            //foreach (var collectionEntity in collection.Data)
-            //{
-            //    collectionEntity.CollectionDocuments = collectionDocuments.Where(f => f.CollectionId == collectionEntity.Id).Select(f => new CollectionDocumentListDto
-            //    {
-            //        Id = f.Id,
-            //        CollectionId = f.CollectionId,
-            //        Number = f.Number,
-            //        LastDate = f.LastDate,
-            //        Price = f.Price,
-            //    }).ToList();
-            //}
-
             return new ServiceResponse<PagedResponseDto<CollectionListDto>>(collection, true, string.Empty);
         }
 
-        public async Task<ServiceResponse> UpdateCollection(UpdateCollectionRequestDto request)
+        public async Task<ServiceResponse> UpdateCollection(CollectionUpdateRequestDto request)
         {
             var collection = await _collectionRepository.GetById(request.Id).ConfigureAwait(false);
             if (collection == null)
@@ -181,44 +174,46 @@ namespace Accounting.Application.Service.Collection
                 return new ServiceResponse(false, "Collection cannot be found");
             }
 
-            var originalCollection = CloneCollection(collection);
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
+                    collection.Number = request.Number;
                     collection.CorporationId = request.CorporationId;
                     collection.InOut = request.InOut;
                     collection.Date = request.Date;
                     collection.LastDate = request.LastDate;
                     collection.PaymentType = request.PaymentType;
                     collection.TotalPrice = request.TotalPrice;
-                    collection.TenantId = _claimManager.GetTenantId();
 
                     await _collectionRepository.Update(collection).ConfigureAwait(false);
-
-                    foreach (var documentDto in request.Documents)
+                    if (request.Documents.Any())
                     {
-                        var collectionDocument = await _collectionDocumentRepository.GetById(documentDto.Id).ConfigureAwait(false);
-                        if (collectionDocument == null)
-                        {
-                            return new ServiceResponse(false, $"CollectionDocument with Number {documentDto.Number} cannot be found");
-                        }
 
-                        if (collectionDocument.LastDate != documentDto.LastDate ||
-                            collectionDocument.Number != documentDto.Number ||
-                            collectionDocument.Price != documentDto.Price)
-                        {
-                            collectionDocument.CollectionId = collection.Id;
-                            collectionDocument.LastDate = documentDto.LastDate;
-                            collectionDocument.Number = documentDto.Number;
-                            collectionDocument.Price = documentDto.Price;
-                            collectionDocument.TenantId = _claimManager.GetTenantId();
 
-                            await _collectionDocumentRepository.Update(collectionDocument).ConfigureAwait(false);
-                            var corpRecord = await updateCorpRecord(collection).ConfigureAwait(false);
-                            if (!corpRecord.IsSuccesfull)
+                        foreach (var documentDto in request.Documents)
+                        {
+                            var collectionDocument = await _collectionDocumentRepository.GetById(documentDto.Id).ConfigureAwait(false);
+                            if (collectionDocument == null || collectionDocument.CollectionId != collection.Id)
                             {
-                                return new ServiceResponse(false, "Corp record update failed");
+                                return new ServiceResponse(false, $"CollectionDocument with Number {documentDto.Number} cannot be found");
+                            }
+
+                            if (collectionDocument.LastDate != documentDto.LastDate ||
+                                collectionDocument.Number != documentDto.Number ||
+                                collectionDocument.Price != documentDto.Price)
+                            {
+                                collectionDocument.CollectionId = collection.Id;
+                                collectionDocument.LastDate = documentDto.LastDate;
+                                collectionDocument.Number = documentDto.Number;
+                                collectionDocument.Price = documentDto.Price;
+
+                                await _collectionDocumentRepository.Update(collectionDocument).ConfigureAwait(false);
+                                var corpRecord = await updateCorpRecord(collection).ConfigureAwait(false);
+                                if (!corpRecord.IsSuccesfull)
+                                {
+                                    return new ServiceResponse(false, "Corp record update failed");
+                                }
                             }
                         }
                     }
@@ -231,37 +226,6 @@ namespace Accounting.Application.Service.Collection
                     return new ServiceResponse(false, $"An error occurred: {ex.Message}");
                 }
             }
-        }
-
-
-        private Domain.Collection CloneCollection(Domain.Collection collection)
-        {
-            var collectionCopy = new Domain.Collection
-            {
-                Id = collection.Id,
-                CorporationId = collection.CorporationId,
-                InOut = collection.InOut,
-                Date = collection.Date,
-                LastDate = collection.LastDate,
-                PaymentType = collection.PaymentType,
-                TotalPrice = collection.TotalPrice,
-                TenantId = collection.TenantId
-            };
-
-            collectionCopy.CollectionDocuments = new List<CollectionDocument>();
-            foreach (var document in collection.CollectionDocuments)
-            {
-                collectionCopy.CollectionDocuments.Add(new CollectionDocument
-                {
-                    Id = document.Id,
-                    CollectionId = document.CollectionId,
-                    LastDate = document.LastDate,
-                    Number = document.Number,
-                    Price = document.Price,
-                    TenantId = document.TenantId
-                });
-            }
-            return collectionCopy;
         }
 
         private async Task<ServiceResponse> updateCorpRecord(Domain.Collection collection)

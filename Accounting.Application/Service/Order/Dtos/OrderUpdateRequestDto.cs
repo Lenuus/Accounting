@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Application.Service.Order.Dtos
 {
-    public class UpdateOrderRequestDto
+    public class OrderUpdateRequestDto
     {
         [Required]
         public Guid Id { get; set; }

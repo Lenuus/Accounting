@@ -13,9 +13,9 @@ namespace Accounting.Controllers
         {
             _collectionService = collectionService;
         }
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Create-Collection")]
-        public async Task<IActionResult> CreateCollection([FromBody]CreateCollectionRequestDto request)
+        public async Task<IActionResult> CreateCollection([FromBody]CollectionCreateRequestDto request)
         {
             var response = await _collectionService.CreateCollection(request).ConfigureAwait(false);
             if (response == null)
@@ -25,7 +25,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-Collection")]
         public async Task<IActionResult> DeleteCollection([FromBody] Guid id)
         {
@@ -37,7 +37,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("GetAll-Collection")]
         public async Task<IActionResult> GetAllCollection([FromBody] GetAllCollectionRequest request)
         {
@@ -49,9 +49,9 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Update-Collection")]
-        public async Task<IActionResult> UpdateCollection([FromBody] UpdateCollectionRequestDto request)
+        public async Task<IActionResult> UpdateCollection([FromBody] CollectionUpdateRequestDto request)
         {
             var response = await _collectionService.UpdateCollection(request).ConfigureAwait(false);
             if (response == null)
@@ -61,7 +61,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-CollectionDocument")]
         public async Task<IActionResult> DeleteCollectionDocument([FromBody] Guid id)
         {

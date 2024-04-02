@@ -14,9 +14,9 @@ namespace Accounting.Controllers
         {
             _expenseervice = expenseService;
         }
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Create-Expense")]
-        public async Task<IActionResult> CreateExpense([FromBody] CreateExpenseRequestDto request)
+        public async Task<IActionResult> CreateExpense([FromBody] ExpenseCreateRequestDto request)
         {
             var response = await _expenseervice.CreateExpense(request).ConfigureAwait(false);
             if (!response.IsSuccesfull)
@@ -25,9 +25,9 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("Update-Expense")]
-        public async Task<IActionResult> UpdateExpense([FromBody] UpdateExpenseRequestDto request)
+        public async Task<IActionResult> UpdateExpense([FromBody] ExpenseUpdateRequestDto request)
         {
             var response = await _expenseervice.UpdateExpense(request).ConfigureAwait(false);
             if (!response.IsSuccesfull)
@@ -36,7 +36,7 @@ namespace Accounting.Controllers
             }
             return Ok(response);
         }
-        [Authorize(Policy = "ManagementPolicy")]
+        [Authorize(Policy = "ManagementRolePolicy")]
         [HttpPost("Delete-Expense")]
         public async Task<IActionResult> DeleteExpense([FromBody] Guid id)
         {
@@ -48,7 +48,7 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "EmployeeAndManagementPolicy")]
+        [Authorize(Policy = "CommonRolePolicy")]
         [HttpPost("GetAll-Expense")]
         public async Task<IActionResult> GetAllExpenses([FromBody] GetAllExpenseRequestDto request)
         {
