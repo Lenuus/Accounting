@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Accounting.Common.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,17 @@ namespace Accounting.Application.Service.AuthPolicy
 {
     public class RolePolicyHandler : AuthorizationHandler<RolePolicyRequirement>
     {
+        private readonly IClaimManager _claimManager;
+        private readonly IMemoryCache _memoryCache;
+
+        public RolePolicyHandler(
+            IClaimManager claimManager, 
+            IMemoryCache memoryCache)
+        {
+            _claimManager = claimManager;
+            _memoryCache = memoryCache;
+        }
+
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolePolicyRequirement requirementVal)
         {
             if (context?.User?.Identity?.IsAuthenticated == false)
@@ -17,19 +30,17 @@ namespace Accounting.Application.Service.AuthPolicy
                 return Task.CompletedTask;
             }
 
-            var roleClaims = context?.User.Claims.Where(x => x.Type == "custom_role")?.Select(x => x.Value).ToList();
-
-            if (roleClaims != null && roleClaims.Any())
+            var userId = _claimManager.GetUserId();
+            if (userId != Guid.Empty)
             {
-                foreach (var roleClaim in roleClaims)
+                var claims = _memoryCache.Get<List<string>>($"claims_{userId}");
+                if (claims != null && claims.Any() && claims.Any(f => f == requirementVal.Name))
                 {
-                    if (requirementVal.roles.Contains(roleClaim))
-                    {
-                        context.Succeed(requirementVal);
-                        return Task.CompletedTask;
-                    }
+                    context.Succeed(requirementVal);
+                    return Task.CompletedTask;
                 }
             }
+
             context.Fail();
             return Task.CompletedTask;
         }

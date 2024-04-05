@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Accounting.Domain
 {
-    public class RoleClaim: IdentityRoleClaim<Guid>
+    public class RoleClaim: IdentityRoleClaim<Guid>, IBaseEntity
     {
     }
 }

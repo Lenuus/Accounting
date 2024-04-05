@@ -1,6 +1,7 @@
 ﻿using Accounting.Application.Service.Account.Dtos;
 using Accounting.Application.Service.Corporation;
 using Accounting.Application.Service.Corporation.Dtos;
+using Accounting.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +17,8 @@ namespace Accounting.Controllers
             _corporationService = corporationService;
         }
         #region Corporation
-        [Authorize(Policy = "ManagementRolePolicy")]
-        [HttpPost("Create-Corporation")]
+        [Authorize(Policy = RoleClaimConstants.CorporationAdd)]
+        [HttpPost("create-corporation")]
         public async Task<IActionResult> CreateCorporation([FromBody] CorporationRegisterRequestDto request)
         {
             var response = await _corporationService.CreateCorporation(request).ConfigureAwait(false);
@@ -28,8 +29,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("GetAll-Corporation")]
+        [Authorize(Policy = RoleClaimConstants.CorporationUpdate)]
+        [HttpPost("get-all-corporations")]
         public async Task<IActionResult> GetAllCorporation([FromBody] GetAllCorporationRequestDto request)
         {
             var corporations = await _corporationService.GetAllCorporations(request).ConfigureAwait(false);
@@ -40,8 +41,8 @@ namespace Accounting.Controllers
             return Ok(corporations);
         }
 
-        [Authorize(Policy = "ManagementRolePolicy")]
-        [HttpPost("Delete-Corporation")]
+        [Authorize(Policy = RoleClaimConstants.CorporationDelete)]
+        [HttpPost("delete-corporation")]
         public async Task<IActionResult> DeleteCorporation([FromBody] Guid id)
         {
             var response = await _corporationService.RemoveCorporation(id).ConfigureAwait(false);
@@ -52,8 +53,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("Update-Corporation")]
+        [Authorize(Policy = RoleClaimConstants.CorporationUpdate)]
+        [HttpPost("update-corporation")]
         public async Task<IActionResult> UpdateCorporation([FromBody] CorporationUpdateRequestDto request)
         {
             var response = await _corporationService.UpdateCorporation(request).ConfigureAwait(false);
@@ -68,8 +69,8 @@ namespace Accounting.Controllers
 
         #region CorporationRecord
 
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("Create-CorporationRecord")]
+        [Authorize(Policy = RoleClaimConstants.CorporationAdd)]
+        [HttpPost("create-corporation-record")]
         public async Task<IActionResult> CreateCorporationRecord([FromBody] CorporationRecordCreateRequestDto request)
         {
             var response = await _corporationService.CreateCorporationRecord(request).ConfigureAwait(false);
@@ -80,8 +81,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementRolePolicy")]
-        [HttpPost("Delete-CorporationRecord")]
+        [Authorize(Policy = RoleClaimConstants.CorporationDelete)]
+        [HttpPost("delete-corporation-record")]
         public async Task<IActionResult> DeleteCorporationRecord([FromBody] Guid id)
         {
             var response = await _corporationService.RemoveCorporationRecord(id).ConfigureAwait(false);

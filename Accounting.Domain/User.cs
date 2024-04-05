@@ -10,6 +10,7 @@ namespace Accounting.Domain
     public class User : IdentityUser<Guid>, IBaseEntity, ISoftDeletable, ISoftUpdatable, ISoftCreatable
     {
         public ICollection<UserRole> Roles { get; set; }
+        public ICollection<UserClaim> Claims { get; set; }
 
         public Guid? TenantId { get; set; }
 

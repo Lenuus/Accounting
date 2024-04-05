@@ -1,5 +1,6 @@
 ﻿using Accounting.Application.Service.Collection;
 using Accounting.Application.Service.Collection.Dtos;
+using Accounting.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,8 +14,8 @@ namespace Accounting.Controllers
         {
             _collectionService = collectionService;
         }
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("Create-Collection")]
+        [Authorize(Policy = RoleClaimConstants.CollectionAdd)]
+        [HttpPost("create-collection")]
         public async Task<IActionResult> CreateCollection([FromBody]CollectionCreateRequestDto request)
         {
             var response = await _collectionService.CreateCollection(request).ConfigureAwait(false);
@@ -25,8 +26,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementRolePolicy")]
-        [HttpPost("Delete-Collection")]
+        [Authorize(Policy = RoleClaimConstants.CollectionDelete)]
+        [HttpPost("delete-collection")]
         public async Task<IActionResult> DeleteCollection([FromBody] Guid id)
         {
             var response = await _collectionService.DeleteCollection(id).ConfigureAwait(false);
@@ -37,8 +38,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("GetAll-Collection")]
+        [Authorize(Policy = RoleClaimConstants.CollectionList)]
+        [HttpPost("get-all-collections")]
         public async Task<IActionResult> GetAllCollection([FromBody] GetAllCollectionRequest request)
         {
             var response = await _collectionService.GetAllCollections(request).ConfigureAwait(false);
@@ -49,8 +50,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "CommonRolePolicy")]
-        [HttpPost("Update-Collection")]
+        [Authorize(Policy = RoleClaimConstants.CollectionUpdate)]
+        [HttpPost("update-collection")]
         public async Task<IActionResult> UpdateCollection([FromBody] CollectionUpdateRequestDto request)
         {
             var response = await _collectionService.UpdateCollection(request).ConfigureAwait(false);
@@ -61,8 +62,8 @@ namespace Accounting.Controllers
             return Ok(response);
         }
 
-        [Authorize(Policy = "ManagementRolePolicy")]
-        [HttpPost("Delete-CollectionDocument")]
+        [Authorize(Policy = RoleClaimConstants.CollectionUpdate)]
+        [HttpPost("delete-collection-document")]
         public async Task<IActionResult> DeleteCollectionDocument([FromBody] Guid id)
         {
             var response = await _collectionService.DeleteCollectionDocument(id).ConfigureAwait(false);

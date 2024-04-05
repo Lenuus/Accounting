@@ -8,5 +8,6 @@ namespace Accounting.Application.Service.Management
         Task<ServiceResponse> DeleteUser(Guid id);
         Task<ServiceResponse<PagedResponseDto<UserListDto>>> GetAllUsers(GetAllUserRequestDto request);
         Task<ServiceResponse> UpdateUser(UserUpdateRequestDto request);
+        Task<ServiceResponse<List<string>>> GetPermissionsRequests();
     }
 }

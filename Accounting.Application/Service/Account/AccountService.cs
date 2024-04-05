@@ -5,6 +5,7 @@ using AccountingsTracker.Common.Constants;
 using AccountingsTracker.Common.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,8 +25,20 @@ namespace Accounting.Application.Service.Account
         private readonly IAuthService _authService;
         private readonly SignInManager<Domain.User> _singInManager;
         private readonly UserManager<Domain.User> _userManager;
+        private readonly IRepository<Domain.UserClaim> _userClaimRepository;
+        private readonly IRepository<Domain.RoleClaim> _roleClaimRepository;
+        private readonly IMemoryCache _memoryCache;
 
-        public AccountService(IRepository<User> userRepository, IRepository<Role> roleRepository, PasswordHelper passwordHelper, IAuthService authService, UserManager<User> userManager, SignInManager<User> singInManager)
+        public AccountService(
+            IRepository<User> userRepository, 
+            IRepository<Role> roleRepository, 
+            PasswordHelper passwordHelper, 
+            IAuthService authService, 
+            UserManager<User> userManager, 
+            SignInManager<User> singInManager, 
+            IRepository<UserClaim> userClaimRepository, 
+            IRepository<RoleClaim> roleClaimRepository, 
+            IMemoryCache memoryCache)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
@@ -33,6 +46,9 @@ namespace Accounting.Application.Service.Account
             _authService = authService;
             _userManager = userManager;
             _singInManager = singInManager;
+            _userClaimRepository = userClaimRepository;
+            _roleClaimRepository = roleClaimRepository;
+            _memoryCache = memoryCache;
         }
 
         public async Task<ServiceResponse<LoginResponseDto>> Login(LoginRequestDto request)
@@ -109,11 +125,19 @@ namespace Accounting.Application.Service.Account
             claims.Add(new Claim(ClaimTypes.Email, user.Email));
             claims.Add(new Claim(JwtTokenConstants.TenantId, user.TenantId.ToString()));
 
-            foreach (var role in user.Roles.Select(r => r.Role.Name))
+            var userClaims = new List<string>();
+            var userDbClaims = await _userClaimRepository.GetAll().Where(f => f.UserId == user.Id).ToListAsync().ConfigureAwait(false);
+            userClaims.AddRange(userDbClaims.Select(f => f.ClaimValue).Distinct());
+            foreach (var role in user.Roles)
             {
-                claims.Add(new Claim("custom_role", role));
-               
+                claims.Add(new Claim(ClaimTypes.Role, role.Role.Name));
+                if (!userDbClaims.Any())
+                {
+                    var roleDbClaims = await _roleClaimRepository.GetAll().Where(f => f.RoleId == role.RoleId).ToListAsync().ConfigureAwait(false);
+                    userClaims.AddRange(roleDbClaims.Select(f => f.ClaimValue).Distinct());
+                }
             }
+            _memoryCache.Set($"claims_{user.Id}", userClaims);
 
             var tokenInfo = _authService.GenerateToken(claims);
             if (!tokenInfo.IsSuccesfull)

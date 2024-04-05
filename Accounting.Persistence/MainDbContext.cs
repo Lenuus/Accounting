@@ -52,6 +52,7 @@ namespace Accounting.Persistence
             modelBuilder.Entity<ProductImage>().ToTable("ProductImage");
             modelBuilder.Entity<UserRole>().HasOne(p => p.User).WithMany(p => p.Roles).HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<UserRole>().HasOne(p => p.Role).WithMany(p => p.Users).HasForeignKey(p => p.RoleId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<UserClaim>().HasOne(p => p.User).WithMany(p => p.Claims).HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<User>().Property(p => p.IsDeleted).HasDefaultValue(false);
             modelBuilder.Entity<Role>().Property(p => p.IsDeleted).HasDefaultValue(false);
             #endregion

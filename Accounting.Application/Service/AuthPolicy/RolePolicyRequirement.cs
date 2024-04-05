@@ -9,10 +9,10 @@ namespace Accounting.Application.Service.AuthPolicy
 {
     public class RolePolicyRequirement : IAuthorizationRequirement
     {
-        public string[]? roles { get; }
-        public RolePolicyRequirement(string? roles)
+        public string Name { get; set; }
+        public RolePolicyRequirement(string name)
         {
-            this.roles = roles == null ? null : roles.Split(",").ToArray<string>();
+            Name = name;
         }
     }
 }

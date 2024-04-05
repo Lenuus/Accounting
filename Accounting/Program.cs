@@ -1,6 +1,7 @@
 using Accounting.Application;
 using Accounting.Application.Service;
 using Accounting.Application.Service.AuthPolicy;
+using Accounting.Common.Constants;
 using Accounting.Common.Helpers;
 using Accounting.Domain;
 using Accounting.Persistence;
@@ -45,6 +46,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,26 +67,14 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization(options =>
 {
-
-    options.AddPolicy("ManagementRolePolicy", policyBuilder =>
+    foreach (var propInfo in typeof(RoleClaimConstants).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
     {
-        policyBuilder.AddRequirements(new RolePolicyRequirement("Admin,Manager"));
-    });
-    options.AddPolicy("EmployeeRolePolicy", policyBuilder =>
-    {
-        policyBuilder.AddRequirements(new RolePolicyRequirement("Employee"));
-    });
-    options.AddPolicy("CommonRolePolicy", policyBuilder =>
-    {
-        policyBuilder.AddRequirements(new RolePolicyRequirement("Admin,Employee"));
-    });
-
-    options.AddPolicy("EmployeeAndManagementPolicy", policyBuilder =>
-    policyBuilder.RequireAssertion(context =>
-        context.User.IsInRole("Management") ||
-        context.User.IsInRole("Admin") ||
-        context.User.IsInRole("Employee")));
-
+        var value = propInfo.GetValue(null)?.ToString();
+        if (!string.IsNullOrEmpty(value))
+        {
+            options.AddPolicy(value, policy => policy.Requirements.Add(new RolePolicyRequirement(value)));
+        }
+    }
 });
 
 
