@@ -6,7 +6,7 @@ using Accounting.Common.Helpers;
 using Accounting.Domain;
 using Accounting.Persistence;
 using Accounting.Persistence.Interceptors;
-using AccountingsTracker.Common.Helpers;
+using Accounting.Common.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

@@ -1,6 +1,6 @@
 ﻿using Accounting.Application.Service.Collection.Dtos;
 using Accounting.Application.Service.Corporation.Dtos;
-using AccountingsTracker.Common.Dtos;
+using Accounting.Common.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

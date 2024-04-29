@@ -1,5 +1,5 @@
 ﻿using Accounting.Application.Service.Management.Dtos;
-using AccountingsTracker.Common.Dtos;
+using Accounting.Common.Dtos;
 
 namespace Accounting.Application.Service.Management
 {

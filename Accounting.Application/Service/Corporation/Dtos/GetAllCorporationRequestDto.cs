@@ -1,4 +1,4 @@
-﻿using AccountingsTracker.Common.Dtos;
+﻿using Accounting.Common.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

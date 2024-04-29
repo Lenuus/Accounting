@@ -1,10 +1,9 @@
 ﻿using Accounting.Application.Service.Corporation.Dtos;
 using Accounting.Application.Service.Order;
 using Accounting.Application.Service.Order.Dtos;
+using Accounting.Common.Dtos;
 using Accounting.Common.Helpers;
 using Accounting.Domain;
-using AccountingsTracker.Common.Dtos;
-using AccountingsTracker.Common.Helpers;
 using AutoMapper;
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +39,7 @@ namespace Accounting.Application.Service.Corporation
         {
             var loggedUserId = _claimManager.GetUserId();
             var loggedTenantId = _claimManager.GetTenantId();
+            
             var query = await _corporationRepository.GetAll()
             .Include(f => f.Orders)
             .Include(f => f.CorporationRecords)

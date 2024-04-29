@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AccountingsTracker.Common.Constants
+namespace Accounting.Common.Constants
 {
     public static class JwtTokenConstants
     {

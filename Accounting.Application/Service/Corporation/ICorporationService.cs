@@ -1,5 +1,5 @@
 ﻿using Accounting.Application.Service.Corporation.Dtos;
-using AccountingsTracker.Common.Dtos;
+using Accounting.Common.Dtos;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;

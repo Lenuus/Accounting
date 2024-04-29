@@ -1,5 +1,5 @@
 ﻿using Accounting.Common.Enum;
-using AccountingsTracker.Common.Dtos;
+using Accounting.Common.Dtos;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;

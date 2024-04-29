@@ -1,8 +1,8 @@
 ﻿using Accounting.Application.Service.Expense.Dtos;
 using Accounting.Common.Enum;
 using Accounting.Common.Helpers;
-using AccountingsTracker.Common.Dtos;
-using AccountingsTracker.Common.Helpers;
+using Accounting.Common.Dtos;
+using Accounting.Common.Helpers;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Transactions;
